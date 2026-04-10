@@ -23,7 +23,13 @@
     </properties>
 
     <dependencies>
-
+        
+        <!-- OAuth2 Client (Google Login) -->
+        <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+       
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
