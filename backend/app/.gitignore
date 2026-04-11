@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment files - never commit secrets
+.env
+*.env
+
+# Node modules
+node_modules/
+
+# Mac OS
+.DS_Store
