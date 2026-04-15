@@ -50,14 +50,18 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<ResourceResponseDto> searchResources(ResourceType type, Integer minCapacity,
-                                                      String location, ResourceStatus status) {
-        return resourceRepository.findByFilters(type, minCapacity, location, status)
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
+public List<ResourceResponseDto> searchResources(ResourceType type, Integer minCapacity,
+                                                  String location, ResourceStatus status) {
+    List<Resource> all = resourceRepository.findAll();
 
+    return all.stream()
+            .filter(r -> type == null || r.getType() == type)
+            .filter(r -> minCapacity == null || (r.getCapacity() != null && r.getCapacity() >= minCapacity))
+            .filter(r -> location == null || (r.getLocation() != null && r.getLocation().toLowerCase().contains(location.toLowerCase())))
+            .filter(r -> status == null || r.getStatus() == status)
+            .map(this::mapToDto)
+            .collect(Collectors.toList());
+}
     @Override
     public ResourceResponseDto updateResource(String id, ResourceRequestDto dto) {
         Resource resource = resourceRepository.findById(id)
