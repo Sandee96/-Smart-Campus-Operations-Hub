@@ -1,6 +1,7 @@
 package com.studentcampus.app.service;
 
 import com.studentcampus.app.dto.UserResponseDTO;
+import com.studentcampus.app.exception.ResourceNotFoundException;
 import com.studentcampus.app.model.User;
 import com.studentcampus.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +54,14 @@ public class UserService {
     // Get single user by ID
     public UserResponseDTO getUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
         return UserResponseDTO.from(user);
     }
 
     // Update roles — Admin only
     public UserResponseDTO updateUserRoles(String id, Set<User.Role> newRoles) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
         user.setRoles(newRoles);
         User saved = userRepository.save(user);
         log.info("Roles updated for user {}: {}", saved.getEmail(), newRoles);
@@ -70,7 +71,7 @@ public class UserService {
     // Deactivate user — Admin only
     public UserResponseDTO deactivateUser(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
         user.setActive(false);
         return UserResponseDTO.from(userRepository.save(user));
     }

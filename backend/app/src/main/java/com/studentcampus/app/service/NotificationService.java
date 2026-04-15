@@ -2,6 +2,8 @@ package com.studentcampus.app.service;
 
 import com.studentcampus.app.dto.NotificationRequestDTO;
 import com.studentcampus.app.dto.NotificationResponseDTO;
+import com.studentcampus.app.exception.ResourceNotFoundException;
+import com.studentcampus.app.exception.UnauthorizedException;
 import com.studentcampus.app.model.Notification;
 import com.studentcampus.app.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,11 +63,11 @@ public class NotificationService {
     // Mark single notification as read
     public NotificationResponseDTO markAsRead(String notificationId, String userId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
 
         // Security check — user can only mark their own notifications
         if (!notification.getUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to update this notification");
+            throw new UnauthorizedException("You can only update your own notifications");
         }
 
         notification.setRead(true);
@@ -85,11 +87,11 @@ public class NotificationService {
     // Delete a single notification
     public void deleteNotification(String notificationId, String userId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
 
         // Security check — user can only delete their own notifications
         if (!notification.getUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized to delete this notification");
+            throw new UnauthorizedException("You can only delete your own notifications");
         }
 
         notificationRepository.delete(notification);
