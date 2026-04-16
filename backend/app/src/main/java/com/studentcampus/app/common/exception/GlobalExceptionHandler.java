@@ -1,9 +1,9 @@
 package com.studentcampus.app.common.exception;
 
-// backend/src/main/java/com/smartcampus/common/exception/GlobalExceptionHandler.java
-
+import com.studentcampus.app.exception.ResourceNotFoundException;
 import com.studentcampus.app.exception.BookingConflictException;
 import com.studentcampus.app.common.dto.ApiResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +14,12 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
 
     @ExceptionHandler(BookingConflictException.class)
     public ResponseEntity<ApiResponse<Void>> handleConflict(BookingConflictException ex) {
@@ -35,7 +41,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntime(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
@@ -45,6 +51,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining(", "));
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Validation failed: " + errors));
     }
