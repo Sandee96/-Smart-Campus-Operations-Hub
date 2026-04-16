@@ -79,6 +79,12 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred. Please try again later.");
     }
 
+    @ExceptionHandler(BookingConflictException.class)
+public ResponseEntity<Map<String, Object>> handleBookingConflict(
+        BookingConflictException ex) {
+    return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+}
+
     // Helper — builds a clean JSON error response
     private ResponseEntity<Map<String, Object>> buildResponse(
             HttpStatus status, String message) {

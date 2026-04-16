@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import java.util.List;
 
@@ -29,39 +29,60 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF — not needed for JWT/REST APIs
             .csrf(csrf -> csrf.disable())
 
-            // Enable CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // Stateless session — JWT handles auth, no server sessions
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Define which endpoints are public vs protected
             .authorizeHttpRequests(auth -> auth
-                // Public — anyone can hit these
+
+                // ✅ Public endpoints — no token needed
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/login/oauth2/**").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()
 
-                // Admin only endpoints
+                // ✅ Booking rules
+                .requestMatchers(HttpMethod.GET, "/api/bookings/**")
+                    .authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/bookings/**")
+                    .hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/**")
+                    .hasAnyRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**")
+                    .hasAnyRole("USER", "ADMIN")
+
+                // ✅ Ticket rules
+                .requestMatchers(HttpMethod.GET, "/api/tickets/**")
+                    .authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/tickets/**")
+                    .hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/tickets/**")
+                    .hasAnyRole("ADMIN", "TECHNICIAN")
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/**")
+                    .hasAnyRole("ADMIN")
+
+                // ✅ Notification rules
+                .requestMatchers("/api/notifications/**")
+                    .authenticated()
+
+                // ✅ Admin only endpoints
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/users/*/roles").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
 
-                // All other requests need authentication
+                // ✅ Everything else needs authentication
                 .anyRequest().authenticated()
             )
 
-            // OAuth2 login configuration
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2SuccessHandler)
             )
 
-            // Add JWT filter before Spring's default auth filter
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
