@@ -3,6 +3,12 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import TicketListPage from "./pages/TicketListPage";
+import CreateTicketPage from "./pages/CreateTicketPage";
+import TicketDetailsPage from "./pages/TicketDetailsPage";
+
 
 function App() {
   const [count, setCount] = useState(0)
@@ -117,5 +123,15 @@ function App() {
     </>
   )
 }
-
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/tickets" />} />
+        <Route path="/tickets" element={<TicketListPage />} />
+        <Route path="/tickets/new" element={<CreateTicketPage />} />
+        <Route path="/tickets/:id" element={<TicketDetailsPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
