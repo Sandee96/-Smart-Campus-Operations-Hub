@@ -32,10 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Security config (local testing only) ###
-**/config/SecurityConfig.java
-
-### Sensitive credentials ###
-**/src/main/resources/application.properties
-**/src/main/resources/application.yml
+# Environment & secrets
 .env
+src/main/resources/application.properties
+src/main/resources/application.yml
