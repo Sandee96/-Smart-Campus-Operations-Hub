@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.studentcampus.app.exception.BookingConflictException; // ✅ ADDED
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -70,6 +71,29 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    // 409 - Booking Conflict
+    @ExceptionHandler(BookingConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleBookingConflict(
+            BookingConflictException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // 422 - Illegal State
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(
+            IllegalStateException ex) {
+        log.warn("Illegal state: {}", ex.getMessage());
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    // 404 - Runtime Exception (generic not found / domain errors) ✅ ADDED
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntime(
+            RuntimeException ex) {
+        log.warn("Runtime exception: {}", ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     // 500 - Any other unexpected error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(
@@ -78,12 +102,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.");
     }
-
-    @ExceptionHandler(BookingConflictException.class)
-public ResponseEntity<Map<String, Object>> handleBookingConflict(
-        BookingConflictException ex) {
-    return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
-}
 
     // Helper — builds a clean JSON error response
     private ResponseEntity<Map<String, Object>> buildResponse(

@@ -30,50 +30,46 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
 
-                // ✅ Public endpoints — no token needed
+                // ✅ Public
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/login/oauth2/**").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()
 
-                // ✅ Booking rules
-                .requestMatchers(HttpMethod.GET, "/api/bookings/**")
-                    .authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/bookings/**")
-                    .hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/bookings/**")
-                    .hasAnyRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**")
-                    .hasAnyRole("USER", "ADMIN")
+                // ✅ Resources (Module A)
+                .requestMatchers(HttpMethod.GET, "/api/resources/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/resources/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/resources/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/resources/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/resources/**").hasRole("ADMIN")
 
-                // ✅ Ticket rules
-                .requestMatchers(HttpMethod.GET, "/api/tickets/**")
-                    .authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/tickets/**")
-                    .hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/tickets/**")
-                    .hasAnyRole("ADMIN", "TECHNICIAN")
-                .requestMatchers(HttpMethod.DELETE, "/api/tickets/**")
-                    .hasAnyRole("ADMIN")
+                // ✅ Bookings (Module B)
+                .requestMatchers(HttpMethod.GET, "/api/bookings/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/bookings/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bookings/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/bookings/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").hasAnyRole("USER", "ADMIN")
 
-                // ✅ Notification rules
-                .requestMatchers("/api/notifications/**")
-                    .authenticated()
+                // ✅ Tickets (Module C)
+                .requestMatchers(HttpMethod.GET, "/api/tickets/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/tickets/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/tickets/**").hasAnyRole("ADMIN", "TECHNICIAN")
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/**").hasRole("ADMIN")
 
-                // ✅ Admin only endpoints
+                // ✅ Notifications (Module D)
+                .requestMatchers("/api/notifications/**").authenticated()
+
+                // ✅ Admin panel
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/users/*/roles").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
 
-                // ✅ Everything else needs authentication
                 .anyRequest().authenticated()
             )
 
@@ -91,7 +87,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         return new UrlBasedCorsConfigurationSource() {{
