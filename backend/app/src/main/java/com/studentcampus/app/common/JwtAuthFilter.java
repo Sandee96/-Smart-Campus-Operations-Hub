@@ -1,5 +1,6 @@
 package com.studentcampus.app.common;
 
+import com.studentcampus.app.common.security.UserPrincipal;
 import com.studentcampus.app.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,8 +38,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             if (jwtUtil.validateToken(token)) {
-                String userId = jwtUtil.extractUserId(token);
-                String email = jwtUtil.extractEmail(token);
+                String userId        = jwtUtil.extractUserId(token);
+                String email         = jwtUtil.extractEmail(token);
+                String name          = jwtUtil.extractName(token);      // ✅ available
+                String picture       = jwtUtil.extractPicture(token);   // ✅ available
                 Set<User.Role> roles = jwtUtil.extractRoles(token);
 
                 // Convert roles to Spring Security authorities
@@ -46,9 +49,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                         .collect(Collectors.toList());
 
-                // Create authentication object
+                // Build UserPrincipal with all user info from token
+                UserPrincipal userPrincipal = UserPrincipal.builder()
+                        .id(userId)
+                        .email(email)
+                        .name(name)
+                        .picture(picture)
+                        .roles(roles)
+                        .authorities(authorities)
+                        .build();
+
+                // Create authentication object with UserPrincipal as principal
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, email, authorities);
+                        new UsernamePasswordAuthenticationToken(
+                                userPrincipal,  // ← Principal is now UserPrincipal object
+                                null,           // ← credentials not needed after auth
+                                authorities);
 
                 // Set in security context — marks request as authenticated
                 SecurityContextHolder.getContext().setAuthentication(authentication);
