@@ -4,7 +4,10 @@ import com.studentcampus.app.dto.*;
 import com.studentcampus.app.exception.BookingConflictException;
 import com.studentcampus.app.model.Booking;
 import com.studentcampus.app.model.BookingStatus;
+import com.studentcampus.app.model.Resource;
+import com.studentcampus.app.model.ResourceStatus;
 import com.studentcampus.app.repository.BookingRepository;
+import com.studentcampus.app.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final ResourceRepository resourceRepository;
 
     // -------------------------------------------------------
     // CREATE BOOKING
@@ -37,12 +41,17 @@ public class BookingService {
                             conflicts.size() + " conflicting booking(s) found.");
         }
 
-        // Resource resourceInfo =
-        // resourceServiceClient.getResource(dto.getResourceId());
+        // Fetch resource details from Catalog module's repository/service
+        Resource resource = resourceRepository.findById(dto.getResourceId())
+                .orElseThrow(() -> new RuntimeException("Resource not found: " + dto.getResourceId()));
+        if (resource.getStatus() != ResourceStatus.ACTIVE) {
+            throw new IllegalStateException("Resource is not available for booking");
+        }
 
         Booking booking = Booking.builder()
                 .resourceId(dto.getResourceId())
-                .resourceName("Pending Catalog Integration") // Replace with catalog lookup
+                .resourceName(resource.getName())
+                .resourceType(resource.getType().name())
                 .userId(userId)
                 .userName(userName)
                 .userEmail(userEmail)
