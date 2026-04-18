@@ -1,0 +1,125 @@
+.ftr {
+  background: #0a2233;
+  margin-top: auto;
+}
+
+.ftr-top {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 3rem 36px;
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+/* Brand */
+.ftr-brand {
+  flex: 1.5;
+  min-width: 200px;
+}
+
+.ftr-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ftr-logo-box {
+  width: 36px;
+  height: 36px;
+  background: #1a56a0;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.ftr-brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ftr-brand-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.65;
+  max-width: 250px;
+}
+
+/* Columns */
+.ftr-col {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ftr-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin-bottom: 4px;
+}
+
+.ftr-col a {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.ftr-col a:hover {
+  color: rgba(255,255,255,0.9);
+}
+
+/* Bottom bar */
+.ftr-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 3rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ftr-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+}
+
+.ftr-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ftr-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+@media (max-width: 768px) {
+  .ftr-top {
+    padding: 40px 1.5rem 28px;
+    gap: 32px;
+  }
+  .ftr-bottom {
+    padding: 16px 1.5rem;
+  }
+  .ftr-brand { min-width: 100%; }
+}
