@@ -38,6 +38,10 @@ public class User {
     @Builder.Default
     private boolean active = true;
 
+    @Builder.Default
+    private NotificationPreferences notificationPreferences
+    = new NotificationPreferences();
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -49,4 +53,18 @@ public class User {
         ADMIN,
         TECHNICIAN
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class NotificationPreferences {
+    private boolean bookingUpdates       = true;
+    private boolean ticketUpdates        = true;
+    private boolean ticketAssigned       = true;
+    private boolean newComments          = true;
+    private boolean roleChanges          = true;
+    private boolean generalNotifications = true;
+}
+
+    
 }
