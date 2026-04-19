@@ -1,5 +1,6 @@
 package com.studentcampus.app.controller;
 
+import com.studentcampus.app.common.security.UserPrincipal;
 import com.studentcampus.app.dto.TicketCreateRequest;
 import com.studentcampus.app.dto.TicketStatusUpdateRequest;
 import com.studentcampus.app.model.Ticket;
@@ -23,16 +24,17 @@ public class TicketController {
 
     private final TicketService ticketService;
 
-    // Helper — get current user ID from JWT
-    private String getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return (String) auth.getPrincipal();
+    // ✅ Returns UserPrincipal NOT String
+    private UserPrincipal getCurrentUser() {
+        Authentication auth = SecurityContextHolder
+                .getContext().getAuthentication();
+        return (UserPrincipal) auth.getPrincipal();
     }
 
     @PostMapping
     public ResponseEntity<Ticket> createTicket(
             @RequestBody TicketCreateRequest request) {
-        String userId = getCurrentUserId(); // ✅ fixed
+        String userId = getCurrentUser().getId(); // ✅
         Ticket createdTicket = ticketService.createTicket(request, userId);
         return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
     }
@@ -54,14 +56,15 @@ public class TicketController {
 
     @GetMapping("/my")
     public ResponseEntity<List<Ticket>> getMyTickets() {
-        String userId = getCurrentUserId(); // ✅ fixed
+        String userId = getCurrentUser().getId(); // ✅
         return ResponseEntity.ok(ticketService.getMyTickets(userId));
     }
 
     @GetMapping("/assigned/{technicianId}")
     public ResponseEntity<List<Ticket>> getAssignedTickets(
             @PathVariable String technicianId) {
-        return ResponseEntity.ok(ticketService.getAssignedTickets(technicianId));
+        return ResponseEntity.ok(
+                ticketService.getAssignedTickets(technicianId));
     }
 
     @PatchMapping("/{ticketId}/status")
