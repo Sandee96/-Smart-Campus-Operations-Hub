@@ -8,6 +8,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.studentcampus.app.exception.BookingConflictException;
+import com.studentcampus.app.exception.ResourceNotFoundException;
+import com.studentcampus.app.exception.UnauthorizedException;
 
 
 import java.time.LocalDateTime;
