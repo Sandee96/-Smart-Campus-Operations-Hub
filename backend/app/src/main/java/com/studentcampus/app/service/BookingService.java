@@ -73,15 +73,13 @@ public class BookingService {
         // ✅ Notify user — booking submitted
         try {
             notificationService.createNotification(
-                NotificationTriggerHelper.booking(
-                    userId,
-                    "Booking Submitted",
-                    "Your booking request for " + resource.getName() +
-                    " has been submitted and is pending approval.",
-                    Notification.NotificationType.GENERAL,
-                    saved.getId()
-                )
-            );
+                    NotificationTriggerHelper.booking(
+                            userId,
+                            "Booking Submitted",
+                            "Your booking request for " + resource.getName() +
+                                    " has been submitted and is pending approval.",
+                            Notification.NotificationType.GENERAL,
+                            saved.getId()));
         } catch (Exception e) {
             log.warn("Failed to send booking submitted notification: {}", e.getMessage());
         }
@@ -137,15 +135,13 @@ public class BookingService {
             // ✅ Notify user — booking approved
             try {
                 notificationService.createNotification(
-                    NotificationTriggerHelper.booking(
-                        booking.getUserId(),
-                        "Booking Approved ✓",
-                        "Your booking for " + booking.getResourceName() +
-                        " has been approved. Check your QR code for check-in.",
-                        Notification.NotificationType.BOOKING_APPROVED,
-                        booking.getId()
-                    )
-                );
+                        NotificationTriggerHelper.booking(
+                                booking.getUserId(),
+                                "Booking Approved ✓",
+                                "Your booking for " + booking.getResourceName() +
+                                        " has been approved. Check your QR code for check-in.",
+                                Notification.NotificationType.BOOKING_APPROVED,
+                                booking.getId()));
             } catch (Exception e) {
                 log.warn("Failed to send booking approved notification: {}", e.getMessage());
             }
@@ -156,16 +152,14 @@ public class BookingService {
             // ✅ Notify user — booking rejected
             try {
                 notificationService.createNotification(
-                    NotificationTriggerHelper.booking(
-                        booking.getUserId(),
-                        "Booking Rejected",
-                        "Your booking for " + booking.getResourceName() +
-                        " has been rejected." +
-                        (dto.getNote() != null ? " Reason: " + dto.getNote() : ""),
-                        Notification.NotificationType.BOOKING_REJECTED,
-                        booking.getId()
-                    )
-                );
+                        NotificationTriggerHelper.booking(
+                                booking.getUserId(),
+                                "Booking Rejected",
+                                "Your booking for " + booking.getResourceName() +
+                                        " has been rejected." +
+                                        (dto.getNote() != null ? " Reason: " + dto.getNote() : ""),
+                                Notification.NotificationType.BOOKING_REJECTED,
+                                booking.getId()));
             } catch (Exception e) {
                 log.warn("Failed to send booking rejected notification: {}", e.getMessage());
             }
@@ -204,15 +198,13 @@ public class BookingService {
         // ✅ Notify user — booking cancelled
         try {
             notificationService.createNotification(
-                NotificationTriggerHelper.booking(
-                    userId,
-                    "Booking Cancelled",
-                    "Your booking for " + booking.getResourceName() +
-                    " has been cancelled.",
-                    Notification.NotificationType.BOOKING_CANCELLED,
-                    booking.getId()
-                )
-            );
+                    NotificationTriggerHelper.booking(
+                            userId,
+                            "Booking Cancelled",
+                            "Your booking for " + booking.getResourceName() +
+                                    " has been cancelled.",
+                            Notification.NotificationType.BOOKING_CANCELLED,
+                            booking.getId()));
         } catch (Exception e) {
             log.warn("Failed to send booking cancelled notification: {}", e.getMessage());
         }
@@ -235,12 +227,12 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime windowStart = booking.getStartTime().minusMinutes(15);
-        LocalDateTime windowEnd   = booking.getEndTime();
+        LocalDateTime windowEnd = booking.getEndTime();
 
         if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
             throw new IllegalStateException(
                     "Check-in is only allowed within 15 minutes before " +
-                    "start time until end time");
+                            "start time until end time");
         }
 
         booking.setStatus(BookingStatus.CHECKED_IN);
