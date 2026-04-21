@@ -1,47 +1,34 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
+});
 
-const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return { headers: { Authorization: `Bearer ${token}` } };
-};
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-export const getAllResources = async () => {
-    const response = await axios.get(`${API_BASE_URL}/resources`, getAuthHeader());
-    return response.data;
-};
+export const resourceApi = {
+  getAll: () => api.get("/resources"),
 
-export const getResourceById = async (id) => {
-    const response = await axios.get(`${API_BASE_URL}/resources/${id}`, getAuthHeader());
-    return response.data;
-};
+  getById: (id) => api.get(`/resources/${id}`),
 
-export const searchResources = async (filters) => {
+  search: (filters) => {
     const params = new URLSearchParams();
-    if (filters.type) params.append('type', filters.type);
-    if (filters.minCapacity) params.append('minCapacity', filters.minCapacity);
-    if (filters.location) params.append('location', filters.location);
-    if (filters.status) params.append('status', filters.status);
-    const response = await axios.get(`${API_BASE_URL}/resources/search?${params}`, getAuthHeader());
-    return response.data;
-};
+    if (filters.type) params.append("type", filters.type);
+    if (filters.minCapacity) params.append("minCapacity", filters.minCapacity);
+    if (filters.location) params.append("location", filters.location);
+    if (filters.status) params.append("status", filters.status);
+    return api.get(`/resources/search?${params}`);
+  },
 
-export const createResource = async (resourceData) => {
-    const response = await axios.post(`${API_BASE_URL}/resources`, resourceData, getAuthHeader());
-    return response.data;
-};
+  create: (resourceData) => api.post("/resources", resourceData),
 
-export const updateResource = async (id, resourceData) => {
-    const response = await axios.put(`${API_BASE_URL}/resources/${id}`, resourceData, getAuthHeader());
-    return response.data;
-};
+  update: (id, resourceData) => api.put(`/resources/${id}`, resourceData),
 
-export const updateResourceStatus = async (id, status) => {
-    const response = await axios.patch(`${API_BASE_URL}/resources/${id}/status`, { status }, getAuthHeader());
-    return response.data;
-};
+  updateStatus: (id, status) => api.patch(`/resources/${id}/status`, { status }),
 
-export const deleteResource = async (id) => {
-    await axios.delete(`${API_BASE_URL}/resources/${id}`, getAuthHeader());
+  delete: (id) => api.delete(`/resources/${id}`),
 };

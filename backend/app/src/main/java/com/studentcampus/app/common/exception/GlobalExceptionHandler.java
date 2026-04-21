@@ -1,4 +1,5 @@
-package com.studentcampus.app.exception;
+package com.studentcampus.app.common.exception;
+
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.studentcampus.app.exception.BookingConflictException;
 import com.studentcampus.app.exception.ResourceNotFoundException;
 import com.studentcampus.app.exception.UnauthorizedException;
-
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
