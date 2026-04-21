@@ -10,11 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -23,27 +25,17 @@ public class TicketController {
 
     private final TicketService ticketService;
 
-    // Helper — safely get current user ID from Authentication
-    private String extractUserId(Authentication authentication) {
-        Object principal = authentication.getPrincipal();
-
-        if (principal instanceof String) {
-            return (String) principal;
-        }
-
-        if (principal instanceof UserPrincipal userPrincipal) {
-            return userPrincipal.getId();
-        }
-
-        throw new RuntimeException("Unable to get current user ID");
+    // ✅ Returns UserPrincipal NOT String
+    private UserPrincipal getCurrentUser() {
+        Authentication auth = SecurityContextHolder
+                .getContext().getAuthentication();
+        return (UserPrincipal) auth.getPrincipal();
     }
 
     @PostMapping
     public ResponseEntity<Ticket> createTicket(
-            @RequestBody TicketCreateRequest request,
-            Authentication authentication) {
-
-        String userId = extractUserId(authentication);
+            @RequestBody TicketCreateRequest request) {
+        String userId = getCurrentUser().getId(); // ✅
         Ticket createdTicket = ticketService.createTicket(request, userId);
         return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
     }
@@ -64,29 +56,32 @@ public class TicketController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<Ticket>> getMyTickets(Authentication authentication) {
-        String userId = extractUserId(authentication);
+    public ResponseEntity<List<Ticket>> getMyTickets() {
+        String userId = getCurrentUser().getId(); // ✅
         return ResponseEntity.ok(ticketService.getMyTickets(userId));
     }
 
     @GetMapping("/assigned/{technicianId}")
     public ResponseEntity<List<Ticket>> getAssignedTickets(
             @PathVariable String technicianId) {
-        return ResponseEntity.ok(ticketService.getAssignedTickets(technicianId));
+        return ResponseEntity.ok(
+                ticketService.getAssignedTickets(technicianId));
     }
 
     @PatchMapping("/{ticketId}/status")
     public ResponseEntity<Ticket> updateTicketStatus(
             @PathVariable String ticketId,
             @RequestBody TicketStatusUpdateRequest request) {
-        return ResponseEntity.ok(ticketService.updateTicketStatus(ticketId, request));
+        return ResponseEntity.ok(
+                ticketService.updateTicketStatus(ticketId, request));
     }
 
     @PostMapping("/{ticketId}/attachments")
     public ResponseEntity<Ticket> addAttachments(
             @PathVariable String ticketId,
             @RequestParam("files") MultipartFile[] files) throws IOException {
-        return ResponseEntity.ok(ticketService.addAttachments(ticketId, files));
+        return ResponseEntity.ok(
+                ticketService.addAttachments(ticketId, files));
     }
 
     @DeleteMapping("/{ticketId}")
