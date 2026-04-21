@@ -1,26 +1,51 @@
-<<<<<<< Updated upstream
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useNotificationCount } from '../../hooks/useNotificationCount'
 
 function getStoredUser() {
   try {
     const raw = localStorage.getItem('smartcampus_user')
       || localStorage.getItem('user') || null
-    return raw ? JSON.parse(raw) : null
+    if (raw) return JSON.parse(raw)
+    const token = localStorage.getItem('token')
+    if (!token) return null
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(window.atob(base64))
   } catch { return null }
+}
+
+// Generate consistent color from name for avatar background
+function nameToColor(name) {
+  const colors = [
+    '#0f766e', '#0d9488', '#0891b2', '#7c3aed',
+    '#be185d', '#b45309', '#15803d', '#1d4ed8',
+  ]
+  if (!name) return colors[0]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return colors[Math.abs(hash) % colors.length]
+}
+
+// Get initials from name
+function getInitials(name) {
+  if (!name) return 'U'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 const NAV_ITEMS = [
   {
     section: 'CAMPUS',
     items: [
-      { to: '/dashboard',              icon: '🏠', label: 'Dashboard',   badge: null },
-      { to: '/',              icon: '📋', label: 'Bookings',   badge: null },
-      { to: '/resources',     icon: '🏛', label: 'Resources',     badge: null },
+      { to: '/dashboard',     icon: '🏠', label: 'Dashboard',     badge: null },
+      { to: '/bookings',      icon: '📋', label: 'Bookings',      badge: null },
+      { to: '/resources',     icon: '🏛',  label: 'Resources',     badge: null },
       { to: '/notifications', icon: '🔔', label: 'Notifications', badge: 'notif' },
       { to: '/tickets',       icon: '🎫', label: 'Tickets',       badge: null },
       { to: '/comments',      icon: '💬', label: 'Comments',      badge: null },
-    ]
+      { to: '/settings',      icon: '⚙️',  label: 'Preferences',  badge: null },
+    ],
   },
 ]
 
@@ -28,19 +53,25 @@ const ADMIN_ITEMS = {
   section: 'ADMIN',
   items: [
     { to: '/admin/bookings',  icon: '⚡', label: 'All Bookings',     badge: null },
-    { to: '/admin/resources', icon: '🗂', label: 'Manage Resources', badge: null },
-  ]
+    { to: '/admin/resources', icon: '🗂',  label: 'Manage Resources', badge: null },
+    { to: '/admin/users',     icon: '👥', label: 'Users',            badge: null },
+  ],
 }
 
-export default function Sidebar({ notifCount = 0 }) {
-  const location = useLocation()
+export default function Sidebar() {
+  const location  = useLocation()
   const navigate  = useNavigate()
   const user      = getStoredUser()
-  const isAdmin   = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN'
+  const { count } = useNotificationCount()
   const [collapsed, setCollapsed] = useState(false)
+  const [imgError,  setImgError]  = useState(false)
+
+  const isAdmin = user?.roles?.includes('ADMIN')
+    || user?.role === 'ROLE_ADMIN'
+    || user?.role === 'ADMIN'
 
   const isActive = (path) => {
-    if (path === '/') return location.pathname === '/'
+    if (path === '/dashboard') return location.pathname === '/dashboard' || location.pathname === '/'
     return location.pathname.startsWith(path)
   }
 
@@ -51,27 +82,32 @@ export default function Sidebar({ notifCount = 0 }) {
     navigate('/login')
   }
 
-  const allSections = isAdmin
-    ? [...NAV_ITEMS, ADMIN_ITEMS]
-    : NAV_ITEMS
+  const allSections = isAdmin ? [...NAV_ITEMS, ADMIN_ITEMS] : NAV_ITEMS
+
+  // Avatar: show Google pic, or colored initials
+  const showPicture = user?.picture && !imgError
+  const avatarColor = nameToColor(user?.name)
+  const initials    = getInitials(user?.name)
 
   return (
-    <aside style={{
-      width: collapsed ? 68 : 240,
-      minHeight: '100vh',
-      background: '#5eead4',
-      borderRight: '1px solid #e2e8f0',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
-      position: 'sticky',
-      top: 0,
-      flexShrink: 0,
-      zIndex: 50,
-      overflow: 'hidden',
-    }}>
-
-      {/* ── Logo ─────────────────────────────────── */}
+    <aside
+      style={{
+        width: collapsed ? 68 : 240,
+        minWidth: collapsed ? 68 : 240,
+        minHeight: '100vh',
+        background: '#5eead4',
+        borderRight: '1px solid #e2e8f0',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+        position: 'sticky',
+        top: 0,
+        flexShrink: 0,
+        zIndex: 50,
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Logo ───────────────────────────────── */}
       <div style={{
         padding: collapsed ? '20px 16px' : '20px 20px',
         borderBottom: '1px solid #f1f5f9',
@@ -89,35 +125,32 @@ export default function Sidebar({ notifCount = 0 }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'white', fontWeight: 700, fontSize: 13,
               boxShadow: '0 2px 8px rgba(15,118,110,0.3)',
-            }}>SC</div>
+            }}>UD</div>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{
-                fontWeight: 700, fontSize: 13, color: '#0f172a',
-                lineHeight: 1.2, whiteSpace: 'nowrap',
-              }}>Smart Campus</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                UniDesk
+              </div>
               <div style={{ fontSize: 10, color: '#94a3b8', letterSpacing: '0.05em' }}>
                 SLIIT · OPS
               </div>
             </div>
           </div>
         )}
-
         {collapsed && (
           <div style={{
             width: 36, height: 36, borderRadius: 10,
             background: 'linear-gradient(135deg, #0f766e, #0d9488)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'white', fontWeight: 700, fontSize: 13,
-          }}>SC</div>
+          }}>UD</div>
         )}
-
         <button
           onClick={() => setCollapsed(c => !c)}
           style={{
             width: 26, height: 26, borderRadius: 6, flexShrink: 0,
             background: '#f8fafc', border: '1px solid #e2e8f0',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 11, color: '#94a3b8',
+            cursor: 'pointer', fontSize: 13, color: '#94a3b8',
             transition: 'all 0.15s ease',
           }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -126,24 +159,20 @@ export default function Sidebar({ notifCount = 0 }) {
         </button>
       </div>
 
-      {/* ── Nav sections ─────────────────────────── */}
+      {/* ── Nav sections ────────────────────────── */}
       <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
         {allSections.map(section => (
           <div key={section.section} style={{ marginBottom: 8 }}>
-            {!collapsed && (
-              <p style={{
-                fontSize: 9, fontWeight: 700, color: '#cbd5e1',
-                letterSpacing: '0.1em', padding: '6px 10px 4px',
-                margin: 0,
-              }}>{section.section}</p>
-            )}
-            {collapsed && (
-              <div style={{ height: 1, background: '#f1f5f9', margin: '8px 6px' }} />
-            )}
+            {!collapsed
+              ? <p style={{ fontSize: 9, fontWeight: 700, color: '#cbd5e1', letterSpacing: '0.1em', padding: '6px 10px 4px', margin: 0 }}>
+                  {section.section}
+                </p>
+              : <div style={{ height: 1, background: '#f1f5f9', margin: '8px 6px' }} />
+            }
 
             {section.items.map(item => {
-              const active = isActive(item.to)
-              const badgeNum = item.badge === 'notif' ? notifCount : 0
+              const active   = isActive(item.to)
+              const badgeNum = item.badge === 'notif' ? count : 0
 
               return (
                 <Link
@@ -162,29 +191,15 @@ export default function Sidebar({ notifCount = 0 }) {
                     background: active ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)' : 'transparent',
                     color: active ? '#0f766e' : '#64748b',
                     fontWeight: active ? 600 : 400,
-                    fontSize: 13,
+                    fontSize: 14,
                     transition: 'all 0.15s ease',
                     position: 'relative',
                     borderLeft: active ? '3px solid #0f766e' : '3px solid transparent',
                   }}
-                  onMouseOver={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = '#f8fafc'
-                      e.currentTarget.style.color = '#0f172a'
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = '#64748b'
-                    }
-                  }}
+                  onMouseOver={e => { if (!active) { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#0f172a' } }}
+                  onMouseOut={e =>  { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b' } }}
                 >
-                  <span style={{
-                    fontSize: 16, flexShrink: 0,
-                    filter: active ? 'none' : 'grayscale(30%)',
-                    position: 'relative',
-                  }}>
+                  <span style={{ fontSize: 17, flexShrink: 0, position: 'relative' }}>
                     {item.icon}
                     {collapsed && badgeNum > 0 && (
                       <span style={{
@@ -197,7 +212,6 @@ export default function Sidebar({ notifCount = 0 }) {
                       }}>{badgeNum > 9 ? '9+' : badgeNum}</span>
                     )}
                   </span>
-
                   {!collapsed && (
                     <>
                       <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{item.label}</span>
@@ -217,182 +231,91 @@ export default function Sidebar({ notifCount = 0 }) {
         ))}
       </nav>
 
-      {/* ── User profile at bottom ────────────────── */}
+      {/* ── User profile at bottom ───────────────── */}
       <div style={{
         borderTop: '1px solid #f1f5f9',
-        padding: collapsed ? '14px 10px' : '14px 14px',
+        padding: collapsed ? '14px 10px' : '14px',
       }}>
         {!collapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* ✅ Profile picture OR colored initials */}
             <div style={{
-              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg, #0f766e, #0d9488)',
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+              overflow: 'hidden', position: 'relative',
+              background: avatarColor,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 12,
+              color: 'white', fontWeight: 700, fontSize: 13,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
             }}>
-              {user?.name?.charAt(0).toUpperCase() || '?'}
+              {showPicture
+                ? <img
+                    src={user.picture}
+                    alt={user.name}
+                    onError={() => setImgError(true)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                : <span>{initials}</span>
+              }
             </div>
+
+            {/* Name + role */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
-                fontSize: 12, fontWeight: 600, color: '#0f172a',
+                fontSize: 13, fontWeight: 600, color: '#0f172a',
                 margin: 0, whiteSpace: 'nowrap', overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>{user?.name || 'User'}</p>
-              <p style={{ fontSize: 10, color: '#94a3b8', margin: 0 }}>
+              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
                 {isAdmin ? '🔑 Admin' : '🎓 Student'}
               </p>
             </div>
-            <button
-              onClick={handleLogout}
-              title="Sign out"
-              style={{
-                width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                background: '#fef2f2', border: '1px solid #fecaca',
-                color: '#ef4444', cursor: 'pointer', fontSize: 13,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.15s',
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
-              onMouseOut={e =>  e.currentTarget.style.background = '#fef2f2'}
-            >↪</button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #0f766e, #0d9488)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 11,
-            }}>
-              {user?.name?.charAt(0).toUpperCase() || '?'}
-            </div>
-            <button
-              onClick={handleLogout}
-              title="Sign out"
-              style={{
-                width: 28, height: 28, borderRadius: 7,
-                background: '#fef2f2', border: '1px solid #fecaca',
-                color: '#ef4444', cursor: 'pointer', fontSize: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >↪</button>
+          /* Collapsed: just avatar */
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            overflow: 'hidden', margin: '0 auto',
+            background: avatarColor,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontWeight: 700, fontSize: 13,
+          }}>
+            {showPicture
+              ? <img src={user.picture} alt="" onError={() => setImgError(true)}
+                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span>{initials}</span>
+            }
           </div>
+        )}
+
+        {/* ✅ Sign Out button below name */}
+        {!collapsed && (
+          <button
+            onClick={handleLogout}
+            style={{
+              marginTop: 10,
+              width: '100%',
+              padding: '7px 0',
+              borderRadius: 8,
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#ef4444',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              transition: 'all 0.15s',
+              fontFamily: 'DM Sans, sans-serif',
+            }}
+            onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
+            onMouseOut={e =>  e.currentTarget.style.background = '#fef2f2'}
+          >
+            Sign Out
+          </button>
         )}
       </div>
     </aside>
   )
-=======
-import { NavLink } from 'react-router-dom';
-import { getCurrentUser, logout, hasRole } from '../../api/authApi';
-import { useNotificationCount } from '../../hooks/useNotificationCount';
-
-const NAV = [
-    {
-        label: 'Resources', path: '/resources',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    },
-    {
-        label: 'My Bookings', path: '/bookings',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    },
-    {
-        label: 'Notifications', path: '/notifications', badge: true,
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    },
-    {
-        label: 'Tickets', path: '/tickets',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-    },
-    {
-        label: 'Comments', path: '/comments',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    },
-];
-
-const ADMIN_NAV = [
-    {
-        label: 'Users', path: '/admin/users',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    },
-    {
-        label: 'Settings', path: '/settings',
-        icon: <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    },
-];
-
-export default function Sidebar() {
-    const user = getCurrentUser();
-    const { count } = useNotificationCount();
-
-    return (
-        <aside className="sidebar slide-in">
-            {/* Logo */}
-            <div className="sidebar-logo">
-                <div className="logo-mark">UD</div>
-                <div>
-                    <div className="logo-text-main">UniDesk</div>
-                    <div className="logo-text-sub">SLIIT · OPS</div>
-                </div>
-            </div>
-
-            {/* Navigation */}
-            <nav className="sidebar-nav">
-                <div className="nav-section-label">Campus</div>
-
-                {NAV.map(item => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            `nav-item${isActive ? ' active' : ''}`}>
-                        {item.icon}
-                        {item.label}
-                        {item.badge && count > 0 && (
-                            <span className="nav-badge">
-                                {count > 9 ? '9+' : count}
-                            </span>
-                        )}
-                    </NavLink>
-                ))}
-
-                {hasRole('ADMIN') && (
-                    <>
-                        <div className="nav-section-label" style={{ marginTop: '8px' }}>
-                            Admin
-                        </div>
-                        {ADMIN_NAV.map(item => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={({ isActive }) =>
-                                    `nav-item${isActive ? ' active' : ''}`}>
-                                {item.icon}
-                                {item.label}
-                            </NavLink>
-                        ))}
-                    </>
-                )}
-            </nav>
-
-            {/* User profile */}
-            <div className="sidebar-user">
-                <div className="user-avatar">
-                    {user?.picture
-                        ? <img src={user.picture} alt={user.name} />
-                        : (user?.name?.charAt(0)?.toUpperCase() || 'U')
-                    }
-                </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div className="user-name">{user?.name || 'User'}</div>
-                    <div className="user-role">
-                        {user?.roles?.split(',')[0] || 'USER'}
-                    </div>
-                </div>
-                <button className="logout-btn" onClick={logout}>
-                    Sign Out
-                </button>
-            </div>
-        </aside>
-    );
->>>>>>> Stashed changes
 }
