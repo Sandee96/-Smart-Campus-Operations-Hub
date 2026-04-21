@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.99.0",
     "autoprefixer": "^10.4.27",
+    "axios": "^1.15.1",
     "date-fns": "^4.1.0",
     "postcss": "^8.5.9",
     "qrcode.react": "^4.2.0",

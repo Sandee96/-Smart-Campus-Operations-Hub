@@ -32,42 +32,35 @@ export default function TicketsPage() {
   }, [tickets, selectedStatus]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-sm p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div className="main-content">
+      <div className="page-card">
+        <div className="action-row">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">My Tickets</h1>
-            <p className="text-gray-500 mt-1">Track your reported maintenance issues</p>
+            <h1 className="page-title">My Tickets</h1>
+            <p className="page-subtitle">Track your reported maintenance issues</p>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={fetchTickets}
-              className="px-4 py-2 rounded-xl border border-gray-200 bg-white"
-            >
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <button onClick={fetchTickets} className="secondary-btn">
               Refresh
             </button>
             <button
               onClick={() => navigate("/tickets/new")}
-              className="px-4 py-2 rounded-xl bg-green-600 text-white"
+              className="primary-btn"
             >
               + New Ticket
             </button>
           </div>
         </div>
 
-        <div className="mb-6">
-          <TicketFilters selected={selectedStatus} onChange={setSelectedStatus} />
-        </div>
+        <TicketFilters selected={selectedStatus} onChange={setSelectedStatus} />
 
         {loading ? (
-          <p className="text-gray-500">Loading tickets...</p>
+          <p className="page-subtitle">Loading tickets...</p>
         ) : filteredTickets.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-2xl p-4">
-            No tickets found for this filter.
-          </div>
+          <div className="alert alert-error">No tickets found for this filter.</div>
         ) : (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="ticket-grid">
             {filteredTickets.map((ticket) => (
               <TicketCard
                 key={ticket.id}

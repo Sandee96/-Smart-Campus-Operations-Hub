@@ -21,8 +21,8 @@ export default function CreateTicketPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="main-content">
+      <div className="form-card">
         <TicketForm onSubmit={handleSubmit} loading={loading} />
       </div>
     </div>

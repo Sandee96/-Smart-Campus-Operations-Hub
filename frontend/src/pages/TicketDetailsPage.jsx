@@ -22,39 +22,41 @@ export default function TicketDetailsPage() {
   };
 
   if (!ticket) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="main-content">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">{ticket.category}</h1>
+    <div className="main-content">
+      <div className="details-grid">
+        <div className="details-card">
+          <div className="ticket-card-header">
+            <h1 className="page-title" style={{ marginBottom: 0 }}>
+              {ticket.category}
+            </h1>
             <TicketStatusBadge status={ticket.status} />
           </div>
 
-          <p className="text-gray-600 mb-6">{ticket.description}</p>
+          <p className="ticket-desc">{ticket.description}</p>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-400">Location</p>
-              <p className="font-medium">{ticket.location}</p>
+          <div className="info-boxes">
+            <div className="info-box">
+              <p className="info-label">Location</p>
+              <p className="info-value">{ticket.location}</p>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-400">Priority</p>
-              <p className="font-medium">{ticket.priority}</p>
+            <div className="info-box">
+              <p className="info-label">Priority</p>
+              <p className="info-value">{ticket.priority}</p>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-400">Resource ID</p>
-              <p className="font-medium">{ticket.resourceId || "N/A"}</p>
+            <div className="info-box">
+              <p className="info-label">Resource ID</p>
+              <p className="info-value">{ticket.resourceId || "N/A"}</p>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-sm text-gray-400">Contact</p>
-              <p className="font-medium">{ticket.contactDetails}</p>
+            <div className="info-box">
+              <p className="info-label">Contact</p>
+              <p className="info-value">{ticket.contactDetails}</p>
             </div>
           </div>
         </div>
