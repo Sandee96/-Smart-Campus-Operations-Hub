@@ -87,6 +87,8 @@ public class SecurityConfig {
 
                         // ✅ Notifications (Module D)
                         .requestMatchers("/api/notifications/**").authenticated()
+                        // Add after notification rules
+                        .requestMatchers("/api/users/me/**").authenticated()
 
                         // ✅ Admin panel
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
