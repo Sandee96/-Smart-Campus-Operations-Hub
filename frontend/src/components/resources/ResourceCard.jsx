@@ -10,13 +10,14 @@ const typeConfig = {
 const ResourceCard = ({ resource, onDelete, isAdmin }) => {
     const navigate = useNavigate();
     const config = typeConfig[resource.type] || typeConfig.LAB;
+    const isActive = resource.status === 'ACTIVE';
 
     return (
-        <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
+        <div className="bg-white rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 hover:border-gray-300 hover:-translate-y-1 flex flex-col h-full">
             {/* Top gradient bar */}
             <div className={`h-2 bg-gradient-to-r ${config.color}`} />
 
-            <div className="p-5">
+            <div className="p-6 flex-1 flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
@@ -30,17 +31,17 @@ const ResourceCard = ({ resource, onDelete, isAdmin }) => {
                             </span>
                         </div>
                     </div>
-                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        resource.status === 'ACTIVE'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-600'
+                    <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                        isActive
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-red-50 text-red-600 border-red-200'
                     }`}>
-                        {resource.status === 'ACTIVE' ? '● Active' : '● Unavailable'}
+                        {isActive ? '● Active' : '● Unavailable'}
                     </span>
                 </div>
 
                 {/* Info */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2.5 mb-5">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                         <span>📍</span>
                         <span>{resource.location}</span>
@@ -71,10 +72,10 @@ const ResourceCard = ({ resource, onDelete, isAdmin }) => {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-3 border-t border-gray-100">
+                <div className="flex gap-2 pt-3 border-t border-gray-100 mt-auto">
                     <button
                         onClick={() => navigate(`/resources/${resource.id}`)}
-                        className="flex-1 bg-gray-900 text-white py-2 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors"
+                        className="flex-1 bg-gray-900 text-white py-2 rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     >
                         View Details
                     </button>
@@ -82,13 +83,13 @@ const ResourceCard = ({ resource, onDelete, isAdmin }) => {
                         <>
                             <button
                                 onClick={() => navigate(`/resources/edit/${resource.id}`)}
-                                className="bg-amber-100 text-amber-700 py-2 px-3 rounded-xl text-sm font-medium hover:bg-amber-200 transition-colors"
+                                className="bg-amber-50 text-amber-700 border border-amber-200 py-2 px-3 rounded-xl text-sm font-semibold hover:bg-amber-100 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-600/15"
                             >
                                 ✏️
                             </button>
                             <button
                                 onClick={() => onDelete(resource.id)}
-                                className="bg-red-100 text-red-600 py-2 px-3 rounded-xl text-sm font-medium hover:bg-red-200 transition-colors"
+                                className="bg-red-50 text-red-600 border border-red-200 py-2 px-3 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-600/15"
                             >
                                 🗑️
                             </button>

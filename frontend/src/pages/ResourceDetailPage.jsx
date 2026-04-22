@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResourceById, updateResourceStatus, deleteResource } from '../api/resourceApi';
+import { getResourceById } from '../api/resourceApi';
 
 const typeConfig = {
-    LAB: { icon: '🖥️', color: 'from-blue-500 to-blue-700' },
-    LECTURE_HALL: { icon: '🎓', color: 'from-purple-500 to-purple-700' },
-    MEETING_ROOM: { icon: '🤝', color: 'from-teal-500 to-teal-700' },
-    EQUIPMENT: { icon: '🔧', color: 'from-orange-500 to-orange-700' },
+    LAB: { icon: '🖥️', label: 'Lab' },
+    LECTURE_HALL: { icon: '🎓', label: 'Lecture Hall' },
+    MEETING_ROOM: { icon: '🤝', label: 'Meeting Room' },
+    EQUIPMENT: { icon: '🔧', label: 'Equipment' },
 };
 
 const ResourceDetailPage = () => {
@@ -15,16 +15,6 @@ const ResourceDetailPage = () => {
     const [resource, setResource] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const token = localStorage.getItem('token');
-    let isAdmin = false;
-    if (token) {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            isAdmin = payload.roles === 'ADMIN' ||
-                (Array.isArray(payload.roles) && payload.roles.includes('ADMIN'));
-        } catch (e) { isAdmin = false; }
-    }
 
     useEffect(() => { fetchResource(); }, [id]);
 
@@ -40,174 +30,172 @@ const ResourceDetailPage = () => {
         }
     };
 
-    const handleStatusChange = async (newStatus) => {
-        try {
-            const updated = await updateResourceStatus(id, newStatus);
-            setResource(updated);
-        } catch (err) {
-            alert('Failed to update status.');
-        }
-    };
-
-    const handleDelete = async () => {
-        if (window.confirm('Delete this resource?')) {
-            try {
-                await deleteResource(id);
-                navigate('/resources');
-            } catch (err) {
-                alert('Failed to delete.');
-            }
-        }
-    };
-
     if (loading) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <div className="text-center">
-                <div className="text-5xl animate-bounce mb-4">⏳</div>
-                <p className="text-gray-500">Loading...</p>
+        <div className="page-wrapper">
+            <div className="empty-state">
+                <div className="spinner spinner-lg" />
+                <p style={{ color: 'var(--text-faint)', marginTop: 12 }}>Loading resource...</p>
             </div>
         </div>
     );
 
     if (error) return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <div className="text-center">
-                <div className="text-5xl mb-4">❌</div>
-                <p className="text-red-500">{error}</p>
-                <button onClick={() => navigate('/resources')} className="mt-4 text-blue-500 underline">
-                    Back to Resources
+        <div className="page-wrapper">
+            <div className="empty-state">
+                <div className="empty-icon">❌</div>
+                <p style={{ fontWeight: 600, color: 'var(--text-muted)' }}>{error}</p>
+                <button
+                    onClick={() => navigate('/resources')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ marginTop: 8 }}
+                >
+                    ← Back to Resources
                 </button>
             </div>
         </div>
     );
 
-    const config = typeConfig[resource.type] || typeConfig.LAB;
+    const config = typeConfig[resource.type] || { icon: '🏢', label: resource.type };
+    const isActive = resource.status === 'ACTIVE';
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Hero */}
-            <div className={`bg-gradient-to-r ${config.color} text-white`}>
-                <div className="max-w-4xl mx-auto px-6 py-10">
-                    <button
-                        onClick={() => navigate('/resources')}
-                        className="text-white/80 hover:text-white mb-6 flex items-center gap-2 text-sm"
-                    >
-                        ← Back to Facilities
-                    </button>
-                    <div className="flex items-center gap-4">
-                        <div className="text-6xl">{config.icon}</div>
-                        <div>
-                            <h1 className="text-3xl font-black">{resource.name}</h1>
-                            <p className="text-white/80 mt-1">{resource.type.replace('_', ' ')}</p>
+        <div className="page-wrapper-sm animate-fade-up">
+
+            {/* Hero Banner — matches team style */}
+            <div style={{
+                background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
+                borderRadius: 16, padding: '28px 32px', marginBottom: 28,
+                color: 'white', position: 'relative', overflow: 'hidden',
+            }}>
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+                <div style={{ position: 'absolute', bottom: -30, right: 60, width: 90, height: 90, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
+
+                {/* Back button */}
+                <button
+                    onClick={() => navigate('/resources')}
+                    style={{
+                        background: 'rgba(255,255,255,0.12)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        color: 'white', borderRadius: 8,
+                        padding: '5px 12px', fontSize: 12,
+                        fontWeight: 600, cursor: 'pointer',
+                        marginBottom: 18, display: 'inline-flex',
+                        alignItems: 'center', gap: 6,
+                    }}
+                >
+                    ← Back to Resources
+                </button>
+
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{
+                            width: 56, height: 56, borderRadius: 14,
+                            background: 'rgba(255,255,255,0.15)',
+                            border: '1.5px solid rgba(255,255,255,0.2)',
+                            display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontSize: 28, flexShrink: 0,
+                        }}>
+                            {config.icon}
                         </div>
-                        <div className="ml-auto">
-                            <span className={`px-4 py-2 rounded-full text-sm font-bold ${
-                                resource.status === 'ACTIVE'
-                                    ? 'bg-green-400 text-green-900'
-                                    : 'bg-red-400 text-red-900'
-                            }`}>
-                                {resource.status}
-                            </span>
+                        <div>
+                            <p style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', letterSpacing: '-0.3px' }}>
+                                {resource.name}
+                            </p>
+                            <p style={{ fontSize: 13, margin: 0, opacity: 0.8 }}>
+                                {config.label}
+                            </p>
                         </div>
                     </div>
+
+                    <span className={isActive ? 'badge badge-green' : 'badge badge-red'}
+                        style={{ flexShrink: 0, fontSize: 12, padding: '5px 14px' }}>
+                        {isActive ? 'Active' : 'Out of Service'}
+                    </span>
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="max-w-4xl mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {/* Details Card */}
-                    <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-                        <h2 className="font-bold text-gray-800 mb-4 text-lg">📋 Details</h2>
-                        <div className="space-y-4">
-                            <div className="flex justify-between py-3 border-b border-gray-100">
-                                <span className="text-gray-500">Location</span>
-                                <span className="font-medium text-gray-800">📍 {resource.location}</span>
-                            </div>
-                            <div className="flex justify-between py-3 border-b border-gray-100">
-                                <span className="text-gray-500">Capacity</span>
-                                <span className="font-medium text-gray-800">👥 {resource.capacity} people</span>
-                            </div>
-                            <div className="flex justify-between py-3 border-b border-gray-100">
-                                <span className="text-gray-500">Type</span>
-                                <span className="font-medium text-gray-800">{resource.type.replace('_', ' ')}</span>
-                            </div>
-                            <div className="flex justify-between py-3">
-                                <span className="text-gray-500">Status</span>
-                                <span className={`font-bold ${resource.status === 'ACTIVE' ? 'text-green-600' : 'text-red-500'}`}>
-                                    {resource.status}
+            {/* Details + Availability */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+
+                {/* Details Card */}
+                <div className="card" style={{ padding: '22px 24px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+                        📋 Details
+                    </p>
+                    <div>
+                        {[
+                            { label: 'Location', value: `📍 ${resource.location}` },
+                            { label: 'Capacity', value: `👥 ${resource.capacity} people` },
+                            { label: 'Type', value: config.label },
+                            { label: 'Status', value: resource.status },
+                        ].map((row, i) => (
+                            <div key={i} style={{
+                                display: 'flex', justifyContent: 'space-between',
+                                alignItems: 'center', padding: '12px 0',
+                                borderBottom: i < 3 ? '1px solid var(--border-soft)' : 'none',
+                            }}>
+                                <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>{row.label}</span>
+                                <span style={{
+                                    fontSize: 13, fontWeight: 600,
+                                    color: row.label === 'Status'
+                                        ? (isActive ? 'var(--success)' : 'var(--danger)')
+                                        : 'var(--text-main)',
+                                }}>
+                                    {row.value}
                                 </span>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Availability Card */}
-                    <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-                        <h2 className="font-bold text-gray-800 mb-4 text-lg">🗓️ Availability</h2>
-                        {resource.availabilityWindows && resource.availabilityWindows.length > 0 ? (
-                            <div className="space-y-2">
-                                {resource.availabilityWindows.map((w, i) => (
-                                    <div key={i} className="flex justify-between items-center bg-gray-50 rounded-xl px-4 py-3">
-                                        <span className="font-medium text-gray-700">{w.dayOfWeek}</span>
-                                        <span className="text-gray-500 text-sm">{w.startTime} – {w.endTime}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-400 text-center py-8">No availability windows set</p>
-                        )}
+                        ))}
                     </div>
                 </div>
 
-                {/* Description */}
-                {resource.description && (
-                    <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100 mb-6">
-                        <h2 className="font-bold text-gray-800 mb-3 text-lg">📝 Description</h2>
-                        <p className="text-gray-600 leading-relaxed">{resource.description}</p>
-                    </div>
-                )}
-
-                {/* Timestamps */}
-                <div className="text-xs text-gray-400 mb-6 flex gap-4">
-                    <span>Created: {new Date(resource.createdAt).toLocaleString()}</span>
-                    <span>Updated: {new Date(resource.updatedAt).toLocaleString()}</span>
-                </div>
-
-                {/* Admin Actions */}
-                {isAdmin && (
-                    <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-                        <h2 className="font-bold text-gray-800 mb-4 text-lg">⚙️ Admin Actions</h2>
-                        <div className="flex gap-3 flex-wrap">
-                            <button
-                                onClick={() => navigate(`/resources/edit/${resource.id}`)}
-                                className="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-amber-600 transition-colors"
-                            >
-                                ✏️ Edit Resource
-                            </button>
-                            {resource.status === 'ACTIVE' ? (
-                                <button
-                                    onClick={() => handleStatusChange('OUT_OF_SERVICE')}
-                                    className="bg-orange-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-orange-600 transition-colors"
-                                >
-                                    🔴 Mark Out of Service
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleStatusChange('ACTIVE')}
-                                    className="bg-green-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-green-600 transition-colors"
-                                >
-                                    🟢 Mark Active
-                                </button>
-                            )}
-                            <button
-                                onClick={handleDelete}
-                                className="bg-red-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-red-600 transition-colors"
-                            >
-                                🗑️ Delete
-                            </button>
+                {/* Availability Card */}
+                <div className="card" style={{ padding: '22px 24px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+                        🗓️ Availability
+                    </p>
+                    {resource.availabilityWindows && resource.availabilityWindows.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {resource.availabilityWindows.map((w, i) => (
+                                <div key={i} style={{
+                                    display: 'flex', justifyContent: 'space-between',
+                                    alignItems: 'center', background: 'var(--bg)',
+                                    borderRadius: 10, padding: '10px 14px',
+                                    border: '1px solid var(--border-soft)',
+                                }}>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>
+                                        {w.dayOfWeek}
+                                    </span>
+                                    <span style={{ fontSize: 12, color: 'var(--text-faint)', fontFamily: 'DM Mono, monospace' }}>
+                                        {w.startTime} – {w.endTime}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <div className="empty-state" style={{ padding: '24px 0' }}>
+                            <p style={{ fontSize: 13, color: 'var(--text-faint)' }}>No availability windows set</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Description */}
+            {resource.description && (
+                <div className="card" style={{ padding: '22px 24px', marginBottom: 16 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                        📝 Description
+                    </p>
+                    <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                        {resource.description}
+                    </p>
+                </div>
+            )}
+
+            {/* Timestamps */}
+            <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-faint)', marginBottom: 16 }}>
+                <span>Created: {new Date(resource.createdAt).toLocaleString()}</span>
+                <span>Updated: {new Date(resource.updatedAt).toLocaleString()}</span>
             </div>
         </div>
     );
