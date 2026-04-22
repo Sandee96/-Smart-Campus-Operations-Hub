@@ -1,18 +1,13 @@
 package com.studentcampus.app.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "tickets")
@@ -23,23 +18,15 @@ public class Ticket {
 
     private String resourceId;
     private String location;
-    private String category;
+    private TicketCategory category;
     private String description;
     private Priority priority;
-    private TicketStatus status = TicketStatus.OPEN;
+    private TicketStatus status;
 
-    private String reportedBy;
-    private String assignedTo;
     private String contactDetails;
+    private String createdBy;
+    private String assignedTechnicianId;
 
-    private List<String> attachments = new ArrayList<>();
-
-    private String resolutionNotes;
-    private String rejectionReason;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 }
