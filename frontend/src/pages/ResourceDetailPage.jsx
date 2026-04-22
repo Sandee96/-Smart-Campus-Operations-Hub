@@ -113,6 +113,29 @@ const ResourceDetailPage = () => {
                         {isActive ? 'Active' : 'Out of Service'}
                     </span>
                 </div>
+
+                {/* Primary action */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+                    <button
+                        type="button"
+                        disabled={!isActive}
+                        onClick={() => navigate(`/bookings/new?resourceId=${resource.id}`, { state: { resource } })}
+                        style={{
+                            background: isActive ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.08)',
+                            border: '1.5px solid rgba(255,255,255,0.30)',
+                            color: 'white',
+                            borderRadius: 10,
+                            padding: '10px 16px',
+                            fontSize: 13,
+                            fontWeight: 800,
+                            cursor: isActive ? 'pointer' : 'not-allowed',
+                            opacity: isActive ? 1 : 0.65,
+                        }}
+                        title={isActive ? 'Create a booking request' : 'This resource is not available right now'}
+                    >
+                        📅 Book this Resource
+                    </button>
+                </div>
             </div>
 
             {/* Details + Availability */}
