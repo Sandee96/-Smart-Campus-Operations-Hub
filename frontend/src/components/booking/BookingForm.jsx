@@ -77,7 +77,9 @@ export default function BookingForm() {
           }}>
             <span>📍 {selected.location}</span>
             {selected.capacity && <span>👥 {selected.capacity}</span>}
-            {selected.availabilityWindows?.[0] && <span>🕐 {selected.availabilityWindows[0]}</span>}
+            {selected.availabilityWindows?.[0] && (
+    <span>🕐 {selected.availabilityWindows[0].startTime} - {selected.availabilityWindows[0].endTime}</span>
+)}
           </div>
         )}
       </div>
