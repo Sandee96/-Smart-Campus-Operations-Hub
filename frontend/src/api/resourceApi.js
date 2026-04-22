@@ -11,7 +11,10 @@ api.interceptors.request.use((config) => {
 });
 
 export const resourceApi = {
-  getAll: () => api.get("/resources"),
+  getAll: () =>
+    api.get("/resources").then((res) => ({
+      data: { data: res.data, success: true },
+    })),
 
   getById: (id) => api.get(`/resources/${id}`),
 
@@ -28,16 +31,22 @@ export const resourceApi = {
 
   update: (id, resourceData) => api.put(`/resources/${id}`, resourceData),
 
-  updateStatus: (id, status) => api.patch(`/resources/${id}/status`, { status }),
+  updateStatus: (id, status) =>
+    api.patch(`/resources/${id}/status`, { status }),
 
   delete: (id) => api.delete(`/resources/${id}`),
 };
 
 // Named export aliases for backward compatibility
-export const getAllResources   = ()           => resourceApi.getAll().then(r => r.data);
-export const getResourceById  = (id)         => resourceApi.getById(id).then(r => r.data);
-export const searchResources  = (filters)    => resourceApi.search(filters).then(r => r.data);
-export const createResource   = (data)       => resourceApi.create(data).then(r => r.data);
-export const updateResource   = (id, data)   => resourceApi.update(id, data).then(r => r.data);
-export const updateResourceStatus = (id, status) => resourceApi.updateStatus(id, status).then(r => r.data);
-export const deleteResource   = (id)         => resourceApi.delete(id);
+export const getAllResources = () => resourceApi.getAll().then((r) => r.data);
+export const getResourceById = (id) =>
+  resourceApi.getById(id).then((r) => r.data);
+export const searchResources = (filters) =>
+  resourceApi.search(filters).then((r) => r.data);
+export const createResource = (data) =>
+  resourceApi.create(data).then((r) => r.data);
+export const updateResource = (id, data) =>
+  resourceApi.update(id, data).then((r) => r.data);
+export const updateResourceStatus = (id, status) =>
+  resourceApi.updateStatus(id, status).then((r) => r.data);
+export const deleteResource = (id) => resourceApi.delete(id);
