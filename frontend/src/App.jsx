@@ -20,6 +20,11 @@ import CreateBookingPage from './pages/CreateBookingPage'
 import BookingDetailPage from './pages/BookingDetailPage'
 import QrCheckinPage     from './pages/QrCheckinPage'
 
+// ── Resource member's pages ────────────────────────────────────
+import ResourceListPage   from './pages/ResourceListPage'
+import ResourceDetailPage from './pages/ResourceDetailPage'
+import ResourceFormPage   from './pages/ResourceFormPage'
+
 // ── Placeholders for other teammates ─────────────────────────
 const Placeholder = ({ name }) => (
   <div style={{ padding: '40px 0' }}>
@@ -291,8 +296,11 @@ export default function App() {
                   <Route path="bookings/:id"   element={<BookingDetailPage />} />
 
                   {/* ── RESOURCE member ──────────────────── */}
-                  <Route path="resources"       element={<Placeholder name="🏛 Resources" />} />
-                  <Route path="admin/resources" element={<Placeholder name="🗂 Manage Resources" />} />
+                  <Route path="resources"              element={<ResourceListPage mode="catalogue" />} />
+                  <Route path="resources/:id"          element={<ResourceDetailPage />} />
+                  <Route path="resources/create"       element={<ResourceFormPage />} />
+                  <Route path="resources/edit/:id"     element={<ResourceFormPage />} />
+                  <Route path="admin/resources"        element={<ResourceListPage mode="manage" />} />
 
                   {/* ── TICKET member ────────────────────── */}
                   <Route path="tickets"  element={<Placeholder name="🎫 Tickets" />} />
