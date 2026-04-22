@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
 });
 
-// Same token interceptor as bookingApi
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -12,10 +11,33 @@ api.interceptors.request.use((config) => {
 });
 
 export const resourceApi = {
-  // Get all active resources for the booking form dropdown
-  // Adjust the endpoint path to match what your Catalog teammate built
-  getAll: () => api.get("/resources?status=ACTIVE"),
+  getAll: () => api.get("/resources"),
 
-  // Get a single resource by ID for the booking detail page
   getById: (id) => api.get(`/resources/${id}`),
+
+  search: (filters) => {
+    const params = new URLSearchParams();
+    if (filters.type) params.append("type", filters.type);
+    if (filters.minCapacity) params.append("minCapacity", filters.minCapacity);
+    if (filters.location) params.append("location", filters.location);
+    if (filters.status) params.append("status", filters.status);
+    return api.get(`/resources/search?${params}`);
+  },
+
+  create: (resourceData) => api.post("/resources", resourceData),
+
+  update: (id, resourceData) => api.put(`/resources/${id}`, resourceData),
+
+  updateStatus: (id, status) => api.patch(`/resources/${id}/status`, { status }),
+
+  delete: (id) => api.delete(`/resources/${id}`),
 };
+
+// Named export aliases for backward compatibility
+export const getAllResources   = ()           => resourceApi.getAll().then(r => r.data);
+export const getResourceById  = (id)         => resourceApi.getById(id).then(r => r.data);
+export const searchResources  = (filters)    => resourceApi.search(filters).then(r => r.data);
+export const createResource   = (data)       => resourceApi.create(data).then(r => r.data);
+export const updateResource   = (id, data)   => resourceApi.update(id, data).then(r => r.data);
+export const updateResourceStatus = (id, status) => resourceApi.updateStatus(id, status).then(r => r.data);
+export const deleteResource   = (id)         => resourceApi.delete(id);
