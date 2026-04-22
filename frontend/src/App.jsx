@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Sidebar           from './components/layout/Sidebar'
+import ResourceListPage  from './pages/ResourceListPage'
+import ResourceDetailPage from './pages/ResourceDetailPage'
+import ResourceFormPage  from './pages/ResourceFormPage'
 import BookingsPage      from './pages/BookingsPage'
 import CreateBookingPage from './pages/CreateBookingPage'
 import BookingDetailPage from './pages/BookingDetailPage'
@@ -16,10 +19,10 @@ function getStoredUser() {
 }
 
 function Navbar() {
-  const navigate  = useNavigate()
-  const location  = useLocation()
-  const user      = getStoredUser()
-  const isAdmin   = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN'
+  const navigate = useNavigate()
+  const location = useLocation()
+  const user     = getStoredUser()
+  const isAdmin  = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN'
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -33,7 +36,6 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        {/* Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:10, marginRight:32 }}>
           <div style={{
             width:36, height:36, borderRadius:10,
@@ -52,11 +54,11 @@ function Navbar() {
           </div>
         </div>
 
-        {/* Nav links */}
         <div style={{ display:'flex', gap:2, flex:1 }}>
           {[
             { to:'/', label:'My Bookings' },
             { to:'/bookings/new', label:'New Booking' },
+            { to:'/resources', label:'Resources' },
           ].map(({ to, label }) => (
             <Link key={to} to={to} style={{
               padding:'6px 14px', borderRadius:8, fontSize:13, fontWeight:500,
@@ -78,7 +80,6 @@ function Navbar() {
           )}
         </div>
 
-        {/* User info */}
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           {user && (
             <div style={{ textAlign:'right' }}>
@@ -117,7 +118,6 @@ function Navbar() {
 
 export default function App() {
 
-  // Capture JWT token from OAuth2 redirect URL and save to localStorage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
@@ -143,32 +143,40 @@ export default function App() {
         }}
       />
 
-      {/* App shell: navbar + sidebar + main content */}
       <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'#f8fafc' }}>
 
-        {/* Top navbar — hidden on QR checkin page */}
         <Routes>
           <Route path="/checkin" element={null} />
           <Route path="*" element={<Navbar />} />
         </Routes>
 
-        {/* Sidebar + main */}
         <div style={{ display:'flex', flex:1 }}>
 
-          {/* Sidebar — hidden on QR checkin page */}
           <Routes>
             <Route path="/checkin" element={null} />
             <Route path="*" element={<Sidebar notifCount={3} />} />
           </Routes>
 
-          {/* Main content */}
           <main style={{ flex:1, minWidth:0, overflowX:'hidden' }}>
             <Routes>
-              <Route path="/"               element={<BookingsPage mode="my" />} />
-              <Route path="/admin/bookings" element={<BookingsPage mode="admin" />} />
-              <Route path="/bookings/new"   element={<CreateBookingPage />} />
-              <Route path="/bookings/:id"   element={<BookingDetailPage />} />
-              <Route path="/checkin"        element={<QrCheckinPage />} />
+              {/* Root */}
+              <Route path="/"                    element={<Navigate to="/resources" />} />
+
+              {/* Resource routes (your branch) */}
+              <Route path="/resources"           element={<ResourceListPage />} />
+              <Route path="/resources/create"    element={<ResourceFormPage />} />
+              <Route path="/resources/edit/:id"  element={<ResourceFormPage />} />
+              <Route path="/resources/:id"       element={<ResourceDetailPage />} />
+
+              {/* Booking routes */}
+              <Route path="/bookings"            element={<BookingsPage mode="my" />} />
+              <Route path="/bookings/new"        element={<CreateBookingPage />} />
+              <Route path="/bookings/create"     element={<CreateBookingPage />} />
+              <Route path="/bookings/:id"        element={<BookingDetailPage />} />
+              <Route path="/admin/bookings"      element={<BookingsPage mode="admin" />} />
+
+              {/* QR checkin */}
+              <Route path="/checkin"             element={<QrCheckinPage />} />
             </Routes>
           </main>
 
