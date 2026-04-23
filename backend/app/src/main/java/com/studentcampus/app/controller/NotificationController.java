@@ -21,13 +21,15 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final JwtUtil jwtUtil;
 
-    // Helper — extract user ID from JWT token in request header
+    // Helper — extract user ID from JWT token in Authorization header
     private String getUserId(String authHeader) {
         return jwtUtil.extractUserId(authHeader.substring(7));
     }
 
+    // -------------------------------------------------------
     // GET /api/notifications
-    // Get all notifications for logged-in user
+    // Get all notifications for logged-in user, newest first
+    // -------------------------------------------------------
     @GetMapping
     public ResponseEntity<List<NotificationResponseDTO>> getMyNotifications(
             @RequestHeader("Authorization") String authHeader) {
@@ -35,8 +37,10 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getUserNotifications(userId));
     }
 
+    // -------------------------------------------------------
     // GET /api/notifications/unread
-    // Get only unread notifications
+    // Get only unread notifications for logged-in user
+    // -------------------------------------------------------
     @GetMapping("/unread")
     public ResponseEntity<List<NotificationResponseDTO>> getUnreadNotifications(
             @RequestHeader("Authorization") String authHeader) {
@@ -44,8 +48,10 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getUnreadNotifications(userId));
     }
 
+    // -------------------------------------------------------
     // GET /api/notifications/unread/count
-    // Get unread count — used for navbar badge number
+    // Get count of unread notifications — used for navbar badge number
+    // -------------------------------------------------------
     @GetMapping("/unread/count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(
             @RequestHeader("Authorization") String authHeader) {
@@ -54,8 +60,11 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("count", count));
     }
 
+    // -------------------------------------------------------
     // PUT /api/notifications/{id}/read
-    // Mark single notification as read
+    // Mark a single notification as read
+    // Security: only owner can mark their own notification
+    // -------------------------------------------------------
     @PutMapping("/{id}/read")
     public ResponseEntity<NotificationResponseDTO> markAsRead(
             @PathVariable String id,
@@ -64,8 +73,10 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.markAsRead(id, userId));
     }
 
+    // -------------------------------------------------------
     // PUT /api/notifications/read-all
-    // Mark all notifications as read
+    // Mark ALL notifications as read for logged-in user
+    // -------------------------------------------------------
     @PutMapping("/read-all")
     public ResponseEntity<Map<String, String>> markAllAsRead(
             @RequestHeader("Authorization") String authHeader) {
@@ -74,8 +85,11 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
 
+    // -------------------------------------------------------
     // DELETE /api/notifications/{id}
     // Delete a single notification
+    // Security: only owner can delete their own notification
+    // -------------------------------------------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(
             @PathVariable String id,
@@ -85,8 +99,12 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    // -------------------------------------------------------
     // POST /api/notifications
-    // Create notification — called internally by other modules
+    // Create a new notification
+    // Called internally by other modules (BookingService, TicketService)
+    // Body: { "userId", "title", "message", "type", "referenceId", "referenceType" }
+    // -------------------------------------------------------
     @PostMapping
     public ResponseEntity<NotificationResponseDTO> createNotification(
             @Valid @RequestBody NotificationRequestDTO request) {
