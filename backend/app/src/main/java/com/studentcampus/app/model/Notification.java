@@ -28,7 +28,7 @@ public class Notification {
     // Type of notification
     private NotificationType type;
 
-    // Related resource ID (booking ID, ticket ID etc.)
+    // Related resource ID (booking ID, ticket ID, user ID etc.)
     private String referenceId;
 
     // Reference type so frontend knows where to navigate
@@ -40,6 +40,10 @@ public class Notification {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    // -------------------------------------------------------
+    // Enums
+    // -------------------------------------------------------
+
     public enum NotificationType {
         BOOKING_APPROVED,
         BOOKING_REJECTED,
@@ -48,6 +52,8 @@ public class Notification {
         TICKET_ASSIGNED,
         NEW_COMMENT,
         ROLE_CHANGED,
+        ACCOUNT_APPROVED,   // Sent when admin approves a Staff/Technician account
+        ACCOUNT_REJECTED,   // Sent when admin rejects a Staff/Technician account
         GENERAL
     }
 
