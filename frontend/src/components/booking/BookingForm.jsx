@@ -4,16 +4,38 @@ import toast from 'react-hot-toast'
 import { bookingApi } from '../../api/bookingApi'
 import { resourceApi } from '../../api/resourceApi'
 
-export default function BookingForm() {
+export default function BookingForm({ prefillResourceId = '', prefilledResource = null }) {
   const navigate = useNavigate()
   const [loading, setLoading]       = useState(false)
   const [resources, setResources]   = useState([])
   const [resLoading, setResLoading] = useState(true)
   const [form, setForm] = useState({
-    resourceId:'', startTime:'', endTime:'', purpose:'', expectedAttendees:1,
+    resourceId: prefillResourceId || '', startTime:'', endTime:'', purpose:'', expectedAttendees:1,
   })
 
   useEffect(() => {
+    // If navigated from resource details, show only that resource and hide dropdown.
+    if (prefillResourceId) {
+      if (prefilledResource?.id) {
+        setResources([prefilledResource])
+        setForm(f => ({ ...f, resourceId: prefilledResource.id }))
+        setResLoading(false)
+        return
+      }
+
+      resourceApi.getById(prefillResourceId)
+        .then(res => {
+          const item = res.data?.data || res.data
+          if (!item?.id) throw new Error('Invalid resource payload')
+          setResources([item])
+          setForm(f => ({ ...f, resourceId: item.id }))
+        })
+        .catch(() => toast.error('Could not load selected resource'))
+        .finally(() => setResLoading(false))
+      return
+    }
+
+    // Normal flow (no preselected resource)
     resourceApi.getAll()
       .then(res => {
         const list = res.data.data || []
@@ -22,7 +44,7 @@ export default function BookingForm() {
       })
       .catch(() => toast.error('Could not load facilities'))
       .finally(() => setResLoading(false))
-  }, [])
+  }, [prefillResourceId, prefilledResource])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -60,14 +82,38 @@ export default function BookingForm() {
             Loading facilities...
           </div>
         ) : (
-          <select name="resourceId" value={form.resourceId} onChange={handleChange}
-            className="input" required>
-            {resources.map(r => (
-              <option key={r.id} value={r.id}>
-                {r.name} — {r.type} · Capacity: {r.capacity}
-              </option>
-            ))}
-          </select>
+          prefillResourceId ? (
+            <div className="card-flat" style={{ padding: '14px 16px', background: '#ffffff' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+                    {selected?.name || 'Selected Resource'}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                    {selected?.type ? String(selected.type).replaceAll('_', ' ') : '—'}
+                  </div>
+                </div>
+                {selected?.status && (
+                  <span className={selected.status === 'ACTIVE' ? 'badge badge-green' : 'badge badge-red'}>
+                    {selected.status === 'ACTIVE' ? 'Active' : 'Unavailable'}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10, fontSize: 12, color: '#64748b' }}>
+                {selected?.location && <span>📍 {selected.location}</span>}
+                {selected?.capacity != null && <span>👥 {selected.capacity} people</span>}
+              </div>
+            </div>
+          ) : (
+            <select name="resourceId" value={form.resourceId} onChange={handleChange}
+              className="input" required>
+              {resources.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.name} — {r.type} · Capacity: {r.capacity}
+                </option>
+              ))}
+            </select>
+          )
         )}
         {selected && (
           <div style={{
@@ -77,7 +123,11 @@ export default function BookingForm() {
           }}>
             <span>📍 {selected.location}</span>
             {selected.capacity && <span>👥 {selected.capacity}</span>}
-            {selected.availabilityWindows?.[0] && <span>🕐 {selected.availabilityWindows[0]}</span>}
+            {selected.availabilityWindows?.[0] && (
+              <span>
+                🕐 {selected.availabilityWindows[0].dayOfWeek} {selected.availabilityWindows[0].startTime}–{selected.availabilityWindows[0].endTime}
+              </span>
+            )}
           </div>
         )}
       </div>
