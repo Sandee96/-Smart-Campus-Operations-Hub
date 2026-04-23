@@ -14,7 +14,6 @@ function getStoredUser() {
   } catch { return null }
 }
 
-// Generate consistent color from name for avatar background
 function nameToColor(name) {
   const colors = [
     '#0f766e', '#0d9488', '#0891b2', '#7c3aed',
@@ -26,12 +25,22 @@ function nameToColor(name) {
   return colors[Math.abs(hash) % colors.length]
 }
 
-// Get initials from name
 function getInitials(name) {
   if (!name) return 'U'
   const parts = name.trim().split(' ')
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
+// ── Returns a friendly role label based on roles array ───────
+function getRoleLabel(user) {
+  const roles = user?.roles || ''
+  if (roles.includes('ADMIN'))      return '🔑 Admin'
+  if (roles.includes('TECHNICIAN')) return '🔧 Technician'
+  // USER role — show userType if available
+  const userType = user?.userType
+  if (userType === 'STAFF')         return '👔 Staff'
+  return '🎓 Student'
 }
 
 const NAV_ITEMS = [
@@ -84,10 +93,10 @@ export default function Sidebar() {
 
   const allSections = isAdmin ? [...NAV_ITEMS, ADMIN_ITEMS] : NAV_ITEMS
 
-  // Avatar: show Google pic, or colored initials
   const showPicture = user?.picture && !imgError
   const avatarColor = nameToColor(user?.name)
   const initials    = getInitials(user?.name)
+  const roleLabel   = getRoleLabel(user)
 
   return (
     <aside
@@ -95,7 +104,7 @@ export default function Sidebar() {
         width: collapsed ? 68 : 240,
         minWidth: collapsed ? 68 : 240,
         minHeight: '100vh',
-        background: '#5eead4',
+        background: '#fff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
@@ -238,7 +247,6 @@ export default function Sidebar() {
       }}>
         {!collapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* ✅ Profile picture OR colored initials */}
             <div style={{
               width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
               overflow: 'hidden', position: 'relative',
@@ -258,20 +266,19 @@ export default function Sidebar() {
               }
             </div>
 
-            {/* Name + role */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
                 fontSize: 13, fontWeight: 600, color: '#0f172a',
                 margin: 0, whiteSpace: 'nowrap', overflow: 'hidden',
                 textOverflow: 'ellipsis',
               }}>{user?.name || 'User'}</p>
+              {/* ✅ FIXED — shows correct role based on roles + userType */}
               <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
-                {isAdmin ? '🔑 Admin' : '🎓 Student'}
+                {roleLabel}
               </p>
             </div>
           </div>
         ) : (
-          /* Collapsed: just avatar */
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
             overflow: 'hidden', margin: '0 auto',
@@ -287,7 +294,6 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* ✅ Sign Out button below name */}
         {!collapsed && (
           <button
             onClick={handleLogout}
