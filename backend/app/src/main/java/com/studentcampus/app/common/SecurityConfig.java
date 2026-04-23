@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // ✅ FIX: Return JSON 401 instead of redirecting to Google login
+                // Return JSON 401/403 instead of redirecting to login page
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, exception) -> {
                             response.setContentType("application/json");
@@ -51,20 +51,24 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ Public
+                        // ── Public endpoints ───────────────────────────────
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
+                        // Registration completion — user arrives with a temp token
+                        // but the endpoint must be public so Spring doesn't block it
+                        // before our own JWT logic runs
+                        .requestMatchers("/auth/register/complete").permitAll()
 
-                        // ✅ Resources (Module A)
+                        // ── Resources (Module A) ───────────────────────────
                         .requestMatchers(HttpMethod.GET, "/api/resources/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/resources/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/resources/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/resources/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/resources/**").hasRole("ADMIN")
 
-                        // ✅ Bookings (Module B)
-                        // QR check-in is public — token is the auth mechanism
+                        // ── Bookings (Module B) ────────────────────────────
+                        // QR check-in is public — the QR token itself is the auth mechanism
                         .requestMatchers(HttpMethod.POST, "/api/bookings/checkin").permitAll()
                         // Specific paths first (must come before wildcards)
                         .requestMatchers(HttpMethod.GET, "/api/bookings/my").hasAnyRole("USER", "ADMIN")
@@ -79,18 +83,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/bookings/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").hasAnyRole("USER", "ADMIN")
 
-                        // ✅ Tickets (Module C)
+                        // ── Tickets (Module C) ─────────────────────────────
                         .requestMatchers(HttpMethod.GET, "/api/tickets/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/tickets/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/tickets/**").hasAnyRole("ADMIN", "TECHNICIAN")
                         .requestMatchers(HttpMethod.DELETE, "/api/tickets/**").hasRole("ADMIN")
 
-                        // ✅ Notifications (Module D)
+                        // ── Notifications (Module D) ───────────────────────
                         .requestMatchers("/api/notifications/**").authenticated()
                         // Add after notification rules
                         .requestMatchers("/api/users/me/**").authenticated()
 
-                        // ✅ Admin panel
+                        // ── User preferences ───────────────────────────────
+                        .requestMatchers("/api/users/me/**").authenticated()
+
+                        // ── Admin panel (Module E) ─────────────────────────
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/*/roles").hasRole("ADMIN")

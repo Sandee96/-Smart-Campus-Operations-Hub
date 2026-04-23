@@ -25,7 +25,7 @@ public class UserController {
 
     // -------------------------------------------------------
     // GET /api/users
-    // Get all users — moved to AdminController but kept for compatibility
+    // Get all users — Admin only (protected in SecurityConfig)
     // -------------------------------------------------------
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
@@ -34,11 +34,10 @@ public class UserController {
 
     // -------------------------------------------------------
     // GET /api/users/{id}
-    // Get single user by ID
+    // Get single user by ID — any authenticated user
     // -------------------------------------------------------
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUserById(
-            @PathVariable String id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -49,38 +48,45 @@ public class UserController {
     @GetMapping("/me/preferences")
     public ResponseEntity<User.NotificationPreferences> getPreferences(
             @RequestHeader("Authorization") String authHeader) {
+
         String userId = jwtUtil.extractUserId(authHeader.substring(7));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         User.NotificationPreferences prefs = user.getNotificationPreferences();
         if (prefs == null) prefs = new User.NotificationPreferences();
+
         return ResponseEntity.ok(prefs);
     }
 
     // -------------------------------------------------------
     // PUT /api/users/me/preferences
     // Update current user's notification preferences
+    // Body: { "bookingUpdates": true, "ticketUpdates": false, ... }
     // -------------------------------------------------------
     @PutMapping("/me/preferences")
     public ResponseEntity<User.NotificationPreferences> updatePreferences(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody User.NotificationPreferences preferences) {
+
         String userId = jwtUtil.extractUserId(authHeader.substring(7));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         user.setNotificationPreferences(preferences);
         userRepository.save(user);
         log.info("Notification preferences updated for user: {}", userId);
+
         return ResponseEntity.ok(preferences);
     }
 
     // -------------------------------------------------------
     // DELETE /api/users/{id}
-    // Deactivate user — Admin only (also in AdminController)
+    // Deactivate user — Admin only (protected in SecurityConfig)
+    // NOTE: Role management is in AdminController only
     // -------------------------------------------------------
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> deactivateUser(
-            @PathVariable String id) {
+    public ResponseEntity<UserResponseDTO> deactivateUser(@PathVariable String id) {
         return ResponseEntity.ok(userService.deactivateUser(id));
     }
 }

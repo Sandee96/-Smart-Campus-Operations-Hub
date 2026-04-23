@@ -32,15 +32,23 @@ public class User {
 
     private String googleId;         // Google sub (unique Google user ID)
 
+    // What the user selected during registration
     @Builder.Default
-    private Set<Role> roles = Set.of(Role.USER);   // default role
+    private UserType userType = UserType.STUDENT;
+
+    // Account approval status
+    @Builder.Default
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+    @Builder.Default
+    private Set<Role> roles = Set.of(Role.USER);
 
     @Builder.Default
     private boolean active = true;
 
     @Builder.Default
     private NotificationPreferences notificationPreferences
-    = new NotificationPreferences();
+            = new NotificationPreferences();
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -48,23 +56,44 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    // -------------------------------------------------------
+    // Enums
+    // -------------------------------------------------------
+
     public enum Role {
         USER,
         ADMIN,
         TECHNICIAN
     }
 
+    // What type the user selected at registration
+    public enum UserType {
+        STUDENT,
+        STAFF,
+        TECHNICIAN
+    }
+
+    // Account approval workflow
+    public enum AccountStatus {
+        ACTIVE,       // Student: auto-active. Staff/Technician: after admin approves
+        PENDING,      // Staff/Technician waiting for admin approval
+        REJECTED,     // Admin rejected the account
+        DEACTIVATED   // Admin deactivated the account
+    }
+
+    // -------------------------------------------------------
+    // Nested class — Notification Preferences
+    // -------------------------------------------------------
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class NotificationPreferences {
-    private boolean bookingUpdates       = true;
-    private boolean ticketUpdates        = true;
-    private boolean ticketAssigned       = true;
-    private boolean newComments          = true;
-    private boolean roleChanges          = true;
-    private boolean generalNotifications = true;
-}
-
-    
+        private boolean bookingUpdates       = true;
+        private boolean ticketUpdates        = true;
+        private boolean ticketAssigned       = true;
+        private boolean newComments          = true;
+        private boolean roleChanges          = true;
+        private boolean generalNotifications = true;
+    }
 }

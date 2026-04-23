@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useNotificationCount } from '../../hooks/useNotificationCount'
+import logo from '../../assets/unidesk_logo_cute_large.png'
 
 function getStoredUser() {
   try {
@@ -67,7 +68,7 @@ const ADMIN_ITEMS = {
   ],
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const location  = useLocation()
   const navigate  = useNavigate()
   const user      = getStoredUser()
@@ -85,10 +86,14 @@ export default function Sidebar() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('smartcampus_user')
-    localStorage.removeItem('user')
-    navigate('/login')
+    if (onLogout) {
+      onLogout()
+    } else {
+      localStorage.removeItem('token')
+      localStorage.removeItem('smartcampus_user')
+      localStorage.removeItem('user')
+      navigate('/login')
+    }
   }
 
   const allSections = isAdmin ? [...NAV_ITEMS, ADMIN_ITEMS] : NAV_ITEMS
@@ -118,65 +123,130 @@ export default function Sidebar() {
     >
       {/* ── Logo ───────────────────────────────── */}
       <div style={{
-        padding: collapsed ? '20px 16px' : '20px 20px',
-        borderBottom: '1px solid #f1f5f9',
+        padding: collapsed ? '16px 10px' : '16px 20px',
+        borderBottom: '1px solid rgba(255,255,255,0.3)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'space-between',
         gap: 10,
-        minHeight: 68,
+        minHeight: 72,
       }}>
+
+        {/* Expanded logo + text side by side */}
         {!collapsed && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg, #0f766e, #0d9488)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 13,
-              boxShadow: '0 2px 8px rgba(15,118,110,0.3)',
-            }}>UD</div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                UniDesk
-              </div>
-              <div style={{ fontSize: 10, color: '#94a3b8', letterSpacing: '0.05em' }}>
-                SLIIT · OPS
-              </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            flex: 1,
+          }}>
+            <img
+              src={logo}
+              alt="UniDesk"
+              style={{
+                width: 56,
+                height: 56,
+                objectFit: 'contain',
+                flexShrink: 0,
+              }}
+            />
+            <div>
+              <div style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: '#0f172a',
+                lineHeight: 1.2,
+                letterSpacing: '-0.01em',
+              }}>UniDesk</div>
+              <div style={{
+                fontSize: 10,
+                color: '#0f766e',
+                letterSpacing: '0.08em',
+                fontWeight: 600,
+                marginTop: 2,
+              }}>SLIIT · OPS</div>
             </div>
           </div>
         )}
+
+        {/* Collapsed logo */}
         {collapsed && (
           <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #0f766e, #0d9488)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: 700, fontSize: 13,
-          }}>UD</div>
+            width: 46,
+            height: 46,
+            borderRadius: 12,
+            overflow: 'hidden',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.3)',
+          }}>
+            <img
+              src={logo}
+              alt="UniDesk"
+              style={{
+                width: 46,
+                height: 46,
+                objectFit: 'contain',
+              }}
+            />
+          </div>
         )}
+
+        {/* Collapse toggle button */}
         <button
           onClick={() => setCollapsed(c => !c)}
           style={{
-            width: 26, height: 26, borderRadius: 6, flexShrink: 0,
-            background: '#f8fafc', border: '1px solid #e2e8f0',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 13, color: '#94a3b8',
+            width: 26,
+            height: 26,
+            borderRadius: 6,
+            flexShrink: 0,
+            background: 'rgba(255,255,255,0.5)',
+            border: '1px solid rgba(255,255,255,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            fontSize: 13,
+            color: '#0f766e',
             transition: 'all 0.15s ease',
+            alignSelf: collapsed ? 'center' : 'flex-start',
+            marginTop: collapsed ? 0 : 4,
           }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.7)'}
+          onMouseOut={e =>  e.currentTarget.style.background = 'rgba(255,255,255,0.5)'}
         >
           {collapsed ? '›' : '‹'}
         </button>
       </div>
 
       {/* ── Nav sections ────────────────────────── */}
-      <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto', overflowX: 'hidden' }}>
+      <nav style={{
+        flex: 1,
+        padding: '12px 10px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+      }}>
         {allSections.map(section => (
           <div key={section.section} style={{ marginBottom: 8 }}>
+
+            {/* Section label */}
             {!collapsed
-              ? <p style={{ fontSize: 9, fontWeight: 700, color: '#cbd5e1', letterSpacing: '0.1em', padding: '6px 10px 4px', margin: 0 }}>
-                  {section.section}
-                </p>
-              : <div style={{ height: 1, background: '#f1f5f9', margin: '8px 6px' }} />
+              ? <p style={{
+                  fontSize: 9, fontWeight: 700,
+                  color: '#0f766e',
+                  letterSpacing: '0.1em',
+                  padding: '6px 10px 4px',
+                  margin: 0,
+                }}>{section.section}</p>
+              : <div style={{
+                  height: 1,
+                  background: 'rgba(255,255,255,0.4)',
+                  margin: '8px 6px',
+                }} />
             }
 
             {section.items.map(item => {
@@ -197,19 +267,39 @@ export default function Sidebar() {
                     marginBottom: 2,
                     textDecoration: 'none',
                     justifyContent: collapsed ? 'center' : 'flex-start',
-                    background: active ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)' : 'transparent',
-                    color: active ? '#0f766e' : '#64748b',
+                    background: active
+                      ? 'rgba(255,255,255,0.6)'
+                      : 'transparent',
+                    color: active ? '#0f766e' : '#0f5f58',
                     fontWeight: active ? 600 : 400,
                     fontSize: 14,
                     transition: 'all 0.15s ease',
                     position: 'relative',
-                    borderLeft: active ? '3px solid #0f766e' : '3px solid transparent',
+                    borderLeft: active
+                      ? '3px solid #0f766e'
+                      : '3px solid transparent',
                   }}
-                  onMouseOver={e => { if (!active) { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#0f172a' } }}
-                  onMouseOut={e =>  { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b' } }}
+                  onMouseOver={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.35)'
+                      e.currentTarget.style.color = '#0f172a'
+                    }
+                  }}
+                  onMouseOut={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = '#0f5f58'
+                    }
+                  }}
                 >
-                  <span style={{ fontSize: 17, flexShrink: 0, position: 'relative' }}>
+                  {/* Icon */}
+                  <span style={{
+                    fontSize: 17,
+                    flexShrink: 0,
+                    position: 'relative',
+                  }}>
                     {item.icon}
+                    {/* Badge dot when collapsed */}
                     {collapsed && badgeNum > 0 && (
                       <span style={{
                         position: 'absolute', top: -4, right: -6,
@@ -221,14 +311,20 @@ export default function Sidebar() {
                       }}>{badgeNum > 9 ? '9+' : badgeNum}</span>
                     )}
                   </span>
+
+                  {/* Label + badge when expanded */}
                   {!collapsed && (
                     <>
                       <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{item.label}</span>
                       {badgeNum > 0 && (
                         <span style={{
-                          background: '#ef4444', color: 'white',
-                          borderRadius: 10, padding: '1px 7px',
-                          fontSize: 10, fontWeight: 700, flexShrink: 0,
+                          background: '#ef4444',
+                          color: 'white',
+                          borderRadius: 10,
+                          padding: '1px 7px',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          flexShrink: 0,
                         }}>{badgeNum > 99 ? '99+' : badgeNum}</span>
                       )}
                     </>
@@ -242,11 +338,14 @@ export default function Sidebar() {
 
       {/* ── User profile at bottom ───────────────── */}
       <div style={{
-        borderTop: '1px solid #f1f5f9',
+        borderTop: '1px solid rgba(255,255,255,0.3)',
         padding: collapsed ? '14px 10px' : '14px',
       }}>
         {!collapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+            {/* Avatar */}
+
             <div style={{
               width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
               overflow: 'hidden', position: 'relative',
@@ -269,16 +368,20 @@ export default function Sidebar() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
                 fontSize: 13, fontWeight: 600, color: '#0f172a',
-                margin: 0, whiteSpace: 'nowrap', overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                margin: 0, whiteSpace: 'nowrap',
+                overflow: 'hidden', textOverflow: 'ellipsis',
               }}>{user?.name || 'User'}</p>
-              {/* ✅ FIXED — shows correct role based on roles + userType */}
-              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
-                {roleLabel}
+
+              <p style={{ fontSize: 11, color: '#0f5f58', margin: 0 }}>
+                {isAdmin ? '🔑 Admin' : '🎓 Student'}
+
               </p>
             </div>
           </div>
         ) : (
+
+          /* Collapsed avatar */
+
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
             overflow: 'hidden', margin: '0 auto',
@@ -287,12 +390,19 @@ export default function Sidebar() {
             color: 'white', fontWeight: 700, fontSize: 13,
           }}>
             {showPicture
-              ? <img src={user.picture} alt="" onError={() => setImgError(true)}
-                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ? <img
+                  src={user.picture}
+                  alt=""
+                  onError={() => setImgError(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               : <span>{initials}</span>
             }
           </div>
         )}
+
+
+        {/* Sign Out button — only when expanded */}
 
         {!collapsed && (
           <button
