@@ -373,8 +373,7 @@ export default function Sidebar({ onLogout }) {
               }}>{user?.name || 'User'}</p>
 
               <p style={{ fontSize: 11, color: '#0f5f58', margin: 0 }}>
-                {isAdmin ? '🔑 Admin' : '🎓 Student'}
-
+                {roleLabel}
               </p>
             </div>
           </div>

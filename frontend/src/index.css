@@ -555,46 +555,16 @@ tbody tr:hover { background: #fafafa; }
   overflow: hidden;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   ADD THESE STYLES at the bottom of your existing index.css
-   ───────────────────────────────────────────────────────────── */
-
-/* ─── Pending / Rejected page ────────────────────────────────  */
-/* These pages reuse .login-page and .login-card from your
-   existing CSS, so no new wrapper styles are needed.
-   Only add the extra badge colors below if not already present. */
-
-/* ─── Extra badge colors ─────────────────────────────────────  */
-.badge-amber { background: var(--warning-light); color: #b45309; }
-/* (badge-amber may already exist — safe to add again, no conflict) */
-
-/* ─── Pending tab warning highlight ─────────────────────────── */
-.filter-pill.warn {
-  border-color: #f59e0b;
-  color: #b45309;
-}
-.filter-pill.warn:hover {
-  background: #fffbeb;
+/* Responsive utility for auth pages */
+@media (max-width: 768px) {
+  .login-left-panel {
+    display: none !important;
+  }
+  .desktop-nav {
+    display: none !important;
+  }
+  .step-line {
+    display: none !important;
+  }
 }
 
-/* ─── Register page type card hover ─────────────────────────── */
-.register-type-card {
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 18px;
-  cursor: pointer;
-  background: white;
-  transition: all 0.18s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  text-align: left;
-}
-.register-type-card:hover {
-  border-color: var(--teal);
-  box-shadow: var(--shadow-sm);
-}
-.register-type-card.selected {
-  border-color: var(--teal);
-  background: var(--teal-light);
-}
