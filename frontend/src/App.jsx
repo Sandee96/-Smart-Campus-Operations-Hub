@@ -13,6 +13,11 @@ import NotificationPreferences from './pages/NotificationPreferences'
 import LoginPage               from './pages/LoginPage'
 import AuthCallback            from './pages/AuthCallback'
 import Unauthorized403         from './pages/Unauthorized403'
+import RegisterPage  from './pages/RegisterPage'
+import PendingPage   from './pages/PendingPage'
+import RejectedPage  from './pages/RejectedPage'
+import ApprovedPage  from './pages/ApprovedPage'
+import LandingPage   from './pages/LandingPage'
 
 // ── Booking member's pages ────────────────────────────────────
 import BookingsPage      from './pages/BookingsPage'
@@ -64,6 +69,11 @@ const ProtectedRoute = ({ children, role }) => {
   return children
 }
 
+const PublicRoute = ({ children }) => {
+  if (isLoggedIn()) return <Navigate to="/dashboard" replace />
+  return children
+}
+
 // ── Main layout: sidebar + content (no navbar) ───────────────
 function MainLayout({ children }) {
   const navigate = useNavigate()
@@ -97,6 +107,11 @@ function MainLayout({ children }) {
   )
 }
 
+const ProtectedLayout = ({ children }) => {
+  if (!isLoggedIn()) return <Navigate to="/" replace />
+  return <MainLayout>{children}</MainLayout>
+}
+
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
 
@@ -104,7 +119,9 @@ export default function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token  = params.get('token')
-    if (token) {
+    // We only process it here if it's NOT the auth callback (e.g. if backend redirects to /dashboard?token=)
+    // AuthCallback handles /auth/callback explicitly.
+    if (token && !window.location.pathname.includes('/auth/')) {
       localStorage.setItem('token', token)
       try {
         const base64  = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
@@ -120,7 +137,7 @@ export default function App() {
         localStorage.setItem('smartcampus_user', JSON.stringify(userObj))
         localStorage.setItem('user', JSON.stringify(userObj))
       } catch { /* silent */ }
-      window.history.replaceState({}, '', '/dashboard')
+      window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
 
@@ -142,52 +159,53 @@ export default function App() {
 
       <Routes>
         {/* ── Public (no sidebar) ────────────────────────── */}
+        <Route path="/"              element={<PublicRoute><LandingPage /></PublicRoute>} />
         <Route path="/login"         element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/pending"  element={<PendingPage />} />
+        <Route path="/auth/approved" element={<ApprovedPage />} />
+        <Route path="/auth/rejected" element={<RejectedPage />} />
         <Route path="/403"           element={<Unauthorized403 />} />
         <Route path="/checkin"       element={<QrCheckinPage />} />
 
         {/* ── Protected (sidebar only) ────────────────────── */}
         <Route path="/*" element={
-          isLoggedIn()
-            ? (
-              <MainLayout>
-                <Routes>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
+          <ProtectedLayout>
+            <Routes>
+              <Route index element={<Navigate to="/dashboard" replace />} />
 
-                  {/* ── JAYANI's pages ───────────────────── */}
-                  <Route path="dashboard"     element={<Dashboard />} />
-                  <Route path="notifications" element={<NotificationsPage />} />
-                  <Route path="settings"      element={<NotificationPreferences />} />
-                  <Route path="admin/users"   element={
-                    hasRole('ADMIN')
-                      ? <AdminUsersPage />
-                      : <Navigate to="/403" replace />
-                  } />
+              {/* ── JAYANI's pages ───────────────────── */}
+              <Route path="dashboard"     element={<Dashboard />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="settings"      element={<NotificationPreferences />} />
+              <Route path="admin/users"   element={
+                <ProtectedRoute role="ADMIN">
+                  <AdminUsersPage />
+                </ProtectedRoute>
+              } />
 
-                  {/* ── BOOKING member's pages ───────────── */}
-                  <Route path=""               element={<BookingsPage mode="my" />} />
-                  <Route path="bookings"       element={<BookingsPage mode="my" />} />
-                  <Route path="admin/bookings" element={<BookingsPage mode="admin" />} />
-                  <Route path="bookings/new"   element={<CreateBookingPage />} />
-                  <Route path="bookings/:id"   element={<BookingDetailPage />} />
+              {/* ── BOOKING member's pages ───────────── */}
+              <Route path=""               element={<BookingsPage mode="my" />} />
+              <Route path="bookings"       element={<BookingsPage mode="my" />} />
+              <Route path="admin/bookings" element={<BookingsPage mode="admin" />} />
+              <Route path="bookings/new"   element={<CreateBookingPage />} />
+              <Route path="bookings/:id"   element={<BookingDetailPage />} />
 
-                  {/* ── RESOURCE member ──────────────────── */}
-                  <Route path="resources"          element={<ResourceListPage mode="catalogue" />} />
-                  <Route path="resources/:id"      element={<ResourceDetailPage />} />
-                  <Route path="resources/create"   element={<ResourceFormPage />} />
-                  <Route path="resources/edit/:id" element={<ResourceFormPage />} />
-                  <Route path="admin/resources"    element={<ResourceListPage mode="manage" />} />
+              {/* ── RESOURCE member ──────────────────── */}
+              <Route path="resources"          element={<ResourceListPage mode="catalogue" />} />
+              <Route path="resources/:id"      element={<ResourceDetailPage />} />
+              <Route path="resources/create"   element={<ResourceFormPage />} />
+              <Route path="resources/edit/:id" element={<ResourceFormPage />} />
+              <Route path="admin/resources"    element={<ResourceListPage mode="manage" />} />
 
-                  {/* ── TICKET member ────────────────────── */}
-                  <Route path="tickets"  element={<Placeholder name="🎫 Tickets" />} />
-                  <Route path="comments" element={<Placeholder name="💬 Comments" />} />
+              {/* ── TICKET member ────────────────────── */}
+              <Route path="tickets"  element={<Placeholder name="🎫 Tickets" />} />
+              <Route path="comments" element={<Placeholder name="💬 Comments" />} />
 
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </MainLayout>
-            )
-            : <Navigate to="/login" replace />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </ProtectedLayout>
         } />
       </Routes>
     </BrowserRouter>

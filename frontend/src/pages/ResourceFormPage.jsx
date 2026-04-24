@@ -62,10 +62,36 @@ const ResourceFormPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        // ── Validation ────────────────────────────────────────
+        if (formData.name.trim().length < 3) {
+            setError('Resource name must be at least 3 characters.');
+            return;
+        }
+
+        if (!formData.location) {
+            setError('Please select a location.');
+            return;
+        }
+
+        const cap = parseInt(formData.capacity);
+        if (!cap || cap < 1 || cap > 1000) {
+            setError('Capacity must be between 1 and 1000.');
+            return;
+        }
+
+        for (const window of formData.availabilityWindows) {
+            if (window.startTime >= window.endTime) {
+                setError(`Availability window for ${window.dayOfWeek}: end time must be after start time.`);
+                return;
+            }
+        }
+        // ─────────────────────────────────────────────────────
+
         try {
             setLoading(true);
-            setError(null);
-            const payload = { ...formData, capacity: parseInt(formData.capacity) };
+            const payload = { ...formData, capacity: cap };
             if (isEditMode) {
                 await updateResource(id, payload);
                 alert('Resource updated successfully!');
@@ -84,22 +110,14 @@ const ResourceFormPage = () => {
     return (
         <div className="page-wrapper-sm animate-fade-up">
 
-            {/* Hero Header — same as friend's style */}
+            {/* Hero Header */}
             <div style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
                 borderRadius: 16, padding: '28px 32px', marginBottom: 28,
                 color: 'white', position: 'relative', overflow: 'hidden',
             }}>
-                <div style={{
-                    position: 'absolute', top: -20, right: -20,
-                    width: 120, height: 120, borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.06)',
-                }} />
-                <div style={{
-                    position: 'absolute', bottom: -30, right: 40,
-                    width: 80, height: 80, borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.04)',
-                }} />
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+                <div style={{ position: 'absolute', bottom: -30, right: 40, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
                 <p style={{ fontSize: 24, margin: '0 0 4px', fontWeight: 700 }}>
                     {isEditMode ? '✏️ Update Resource' : '➕ New Resource'}
                 </p>
@@ -110,7 +128,7 @@ const ResourceFormPage = () => {
                 </p>
             </div>
 
-            {/* Form Card — same as friend's style */}
+            {/* Form Card */}
             <div className="card-flat" style={{ padding: '28px 32px' }}>
 
                 {error && (
@@ -127,16 +145,23 @@ const ResourceFormPage = () => {
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+
+                        {/* Name */}
                         <div style={{ gridColumn: '1 / -1' }}>
                             <label>Resource Name *</label>
                             <input
                                 className="input"
                                 type="text" name="name" value={formData.name}
                                 onChange={handleChange} required
+                                minLength="3" maxLength="100"
                                 placeholder="e.g. Lab A101"
                             />
+                            <p style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>
+                                Minimum 3 characters
+                            </p>
                         </div>
 
+                        {/* Type */}
                         <div>
                             <label>Type *</label>
                             <select className="input" name="type" value={formData.type} onChange={handleChange}>
@@ -147,6 +172,7 @@ const ResourceFormPage = () => {
                             </select>
                         </div>
 
+                        {/* Status */}
                         <div>
                             <label>Status *</label>
                             <select className="input" name="status" value={formData.status} onChange={handleChange}>
@@ -155,16 +181,21 @@ const ResourceFormPage = () => {
                             </select>
                         </div>
 
+                        {/* Capacity */}
                         <div>
                             <label>Capacity *</label>
                             <input
                                 className="input"
                                 type="number" name="capacity" value={formData.capacity}
-                                onChange={handleChange} required min="1"
+                                onChange={handleChange} required min="1" max="1000"
                                 placeholder="e.g. 30"
                             />
+                            <p style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>
+                                Between 1 and 1000
+                            </p>
                         </div>
 
+                        {/* Location */}
                         <div>
                             <label>Location *</label>
                             <select
@@ -195,9 +226,13 @@ const ResourceFormPage = () => {
                             className="input"
                             name="description" value={formData.description}
                             onChange={handleChange} rows="3"
+                            maxLength="500"
                             placeholder="Optional description..."
                             style={{ resize: 'none' }}
                         />
+                        <p style={{ fontSize: 11, color: 'var(--text-faint)', textAlign: 'right', marginTop: 4 }}>
+                            {formData.description.length}/500
+                        </p>
                     </div>
 
                     <div className="divider" />

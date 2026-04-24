@@ -61,14 +61,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 2. Account is PENDING (Staff/Technician waiting for admin approval)
         if (user.getAccountStatus() == User.AccountStatus.PENDING) {
             log.info("Pending account — redirecting to pending page: {}", email);
-            response.sendRedirect(FRONTEND_URL + "/auth/pending");
+            response.sendRedirect(FRONTEND_URL + "/auth/pending?email=" + email);
             return;
         }
 
         // 3. Account was REJECTED by admin
         if (user.getAccountStatus() == User.AccountStatus.REJECTED) {
             log.info("Rejected account — redirecting to rejected page: {}", email);
-            response.sendRedirect(FRONTEND_URL + "/auth/rejected");
+            response.sendRedirect(FRONTEND_URL + "/auth/rejected?email=" + email);
             return;
         }
 

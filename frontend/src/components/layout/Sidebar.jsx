@@ -33,6 +33,17 @@ function getInitials(name) {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
+// ── Returns a friendly role label based on roles array ───────
+function getRoleLabel(user) {
+  const roles = user?.roles || ''
+  if (roles.includes('ADMIN'))      return '🔑 Admin'
+  if (roles.includes('TECHNICIAN')) return '🔧 Technician'
+  // USER role — show userType if available
+  const userType = user?.userType
+  if (userType === 'STAFF')         return '👔 Staff'
+  return '🎓 Student'
+}
+
 const NAV_ITEMS = [
   {
     section: 'CAMPUS',
@@ -90,6 +101,7 @@ export default function Sidebar({ onLogout }) {
   const showPicture = user?.picture && !imgError
   const avatarColor = nameToColor(user?.name)
   const initials    = getInitials(user?.name)
+  const roleLabel   = getRoleLabel(user)
 
   return (
     <aside
@@ -97,7 +109,7 @@ export default function Sidebar({ onLogout }) {
         width: collapsed ? 68 : 240,
         minWidth: collapsed ? 68 : 240,
         minHeight: '100vh',
-        background: '#5eead4',
+        background: '#fff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
@@ -331,7 +343,9 @@ export default function Sidebar({ onLogout }) {
       }}>
         {!collapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
             {/* Avatar */}
+
             <div style={{
               width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
               overflow: 'hidden', position: 'relative',
@@ -351,20 +365,22 @@ export default function Sidebar({ onLogout }) {
               }
             </div>
 
-            {/* Name + role */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
                 fontSize: 13, fontWeight: 600, color: '#0f172a',
                 margin: 0, whiteSpace: 'nowrap',
                 overflow: 'hidden', textOverflow: 'ellipsis',
               }}>{user?.name || 'User'}</p>
+
               <p style={{ fontSize: 11, color: '#0f5f58', margin: 0 }}>
-                {isAdmin ? '🔑 Admin' : '🎓 Student'}
+                {roleLabel}
               </p>
             </div>
           </div>
         ) : (
+
           /* Collapsed avatar */
+
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
             overflow: 'hidden', margin: '0 auto',
@@ -384,7 +400,9 @@ export default function Sidebar({ onLogout }) {
           </div>
         )}
 
+
         {/* Sign Out button — only when expanded */}
+
         {!collapsed && (
           <button
             onClick={handleLogout}
