@@ -46,4 +46,7 @@ export const updateResource = (id, data) =>
   resourceApi.update(id, data).then((r) => r.data);
 export const updateResourceStatus = (id, status) =>
   resourceApi.updateStatus(id, status).then((r) => r.data);
+
+
 export const deleteResource = (id) => resourceApi.delete(id);
+

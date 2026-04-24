@@ -41,6 +41,10 @@ export const logout = () => {
 
 export const getGoogleLoginUrl = () => `${BASE}/oauth2/authorization/google`
 
+export const completeRegistration = (type) => authAxios.post('/auth/register/complete', { userType: type })
+
+export const checkStatus = (email) => axios.get(`${BASE}/auth/status?email=${encodeURIComponent(email)}`)
+
 // ── Axios instance with auto auth header ─────────────────────
 export const authAxios = axios.create({ baseURL: BASE })
 

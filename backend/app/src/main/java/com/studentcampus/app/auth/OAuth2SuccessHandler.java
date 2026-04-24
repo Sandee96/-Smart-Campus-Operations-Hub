@@ -22,7 +22,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    // Frontend URL to redirect after login
     private static final String FRONTEND_URL = "http://localhost:5173";
 
     @Override
@@ -31,7 +30,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication)
             throws IOException {
 
-        // Get Google user info from OAuth2
         OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
 
         String googleId = oidcUser.getSubject();
@@ -41,15 +39,49 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         log.info("OAuth2 login success for: {}", email);
 
+        // Check BEFORE saving whether this is a brand-new user
+        boolean isNewUser = !userService.existsByGoogleId(googleId);
+
         // Save or update user in MongoDB
         User user = userService.findOrCreateUser(googleId, email, name, picture);
 
-        // Generate JWT token for the user
-        String token = jwtUtil.generateToken(user);
+        // -------------------------------------------------------
+        // ROUTING LOGIC
+        // -------------------------------------------------------
 
-        // Redirect to frontend with token as URL parameter
-        // Frontend will extract the token and store it
-        String redirectUrl = FRONTEND_URL + "/auth/callback?token=" + token;
-        response.sendRedirect(redirectUrl);
+        // 1. First-time login → redirect to registration page
+        //    User must select their type: Student / Staff / Technician
+        if (isNewUser) {
+            String tempToken = jwtUtil.generateToken(user);
+            log.info("New user — redirecting to registration: {}", email);
+            response.sendRedirect(FRONTEND_URL + "/auth/register?token=" + tempToken);
+            return;
+        }
+
+        // 2. Account is PENDING (Staff/Technician waiting for admin approval)
+        if (user.getAccountStatus() == User.AccountStatus.PENDING) {
+            log.info("Pending account — redirecting to pending page: {}", email);
+            response.sendRedirect(FRONTEND_URL + "/auth/pending?email=" + email);
+            return;
+        }
+
+        // 3. Account was REJECTED by admin
+        if (user.getAccountStatus() == User.AccountStatus.REJECTED) {
+            log.info("Rejected account — redirecting to rejected page: {}", email);
+            response.sendRedirect(FRONTEND_URL + "/auth/rejected?email=" + email);
+            return;
+        }
+
+        // 4. Account is DEACTIVATED by admin
+        if (user.getAccountStatus() == User.AccountStatus.DEACTIVATED || !user.isActive()) {
+            log.info("Deactivated account — redirecting to rejected page: {}", email);
+            response.sendRedirect(FRONTEND_URL + "/auth/rejected");
+            return;
+        }
+
+        // 5. Normal active user → generate JWT and redirect to dashboard
+        String token = jwtUtil.generateToken(user);
+        log.info("Active user — redirecting to dashboard: {}", email);
+        response.sendRedirect(FRONTEND_URL + "/auth/callback?token=" + token);
     }
 }
