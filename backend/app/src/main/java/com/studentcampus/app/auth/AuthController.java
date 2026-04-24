@@ -105,4 +105,17 @@ public class AuthController {
                 "message", "Your account is pending admin approval. You will be notified once approved."
         ));
     }
+
+    // -------------------------------------------------------
+    // GET /auth/status?email=xxx
+    // Returns the current account status for polling
+    // -------------------------------------------------------
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, String>> getStatus(@RequestParam String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("status", "UNKNOWN"));
+        }
+        return ResponseEntity.ok(Map.of("status", user.getAccountStatus().name()));
+    }
 }
