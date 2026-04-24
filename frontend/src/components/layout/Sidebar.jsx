@@ -109,7 +109,7 @@ export default function Sidebar({ onLogout }) {
         width: collapsed ? 68 : 240,
         minWidth: collapsed ? 68 : 240,
         minHeight: '100vh',
-        background: '#fff',
+        background: '#5eead4',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
