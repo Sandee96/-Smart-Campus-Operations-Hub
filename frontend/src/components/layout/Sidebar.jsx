@@ -49,11 +49,10 @@ const NAV_ITEMS = [
     section: 'CAMPUS',
     items: [
       { to: '/dashboard',     icon: '🏠', label: 'Dashboard',     badge: null },
-      { to: '/bookings',      icon: '📋', label: 'Bookings',      badge: null },
       { to: '/resources',     icon: '🏛',  label: 'Resources',     badge: null },
+      { to: '/bookings',      icon: '📋', label: 'Bookings',      badge: null },
       { to: '/notifications', icon: '🔔', label: 'Notifications', badge: 'notif' },
       { to: '/tickets',       icon: '🎫', label: 'Tickets',       badge: null },
-      { to: '/comments',      icon: '💬', label: 'Comments',      badge: null },
       { to: '/settings',      icon: '⚙️',  label: 'Preferences',  badge: null },
     ],
   },

@@ -16,19 +16,17 @@ export const getAllTickets = () => API.get("");
 export const getMyTickets = () => API.get("/my");
 export const getTicketById = (id) => API.get(`/${id}`);
 export const createTicket = (data) => API.post("", data);
-export const updateTicketStatus = (id, data) => API.patch(`/${id}/status`, data);
+export const updateTicketStatus = (id, data) =>
+  API.patch(`/${id}/status`, data);
 export const deleteTicket = (id) => API.delete(`/${id}`);
- feature/chamini/ticket-frontend
+
 export const updateTicketDetails = (id, data) => API.put(`/${id}`, data);
 export const assignTechnician = (id, data) => API.patch(`/${id}/assign`, data);
 
-
-
-main
-
 // comments
 export const getComments = (ticketId) => API.get(`/${ticketId}/comments`);
-export const addComment = (ticketId, data) => API.post(`/${ticketId}/comments`, data);
+export const addComment = (ticketId, data) =>
+  API.post(`/${ticketId}/comments`, data);
 
 // attachments
 export const uploadAttachments = (ticketId, files) => {
