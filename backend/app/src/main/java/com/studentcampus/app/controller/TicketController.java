@@ -4,6 +4,7 @@ import com.studentcampus.app.common.security.UserPrincipal;
 import com.studentcampus.app.dto.AssignTechnicianRequest;
 import com.studentcampus.app.dto.TicketCreateRequest;
 import com.studentcampus.app.dto.TicketStatusUpdateRequest;
+import com.studentcampus.app.dto.TicketUpdateRequest;
 import com.studentcampus.app.model.Ticket;
 import com.studentcampus.app.model.TicketStatus;
 import com.studentcampus.app.service.TicketService;
@@ -29,8 +30,7 @@ public class TicketController {
     }
 
     private boolean isAdmin() {
-        UserPrincipal user = getCurrentUser();
-        return user.getAuthorities().stream()
+        return getCurrentUser().getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
@@ -42,11 +42,13 @@ public class TicketController {
 
     @GetMapping
     public ResponseEntity<List<Ticket>> getAllTickets(
-            @RequestParam(required = false) TicketStatus status
+            @RequestParam(required = false) String status
     ) {
-        if (status != null) {
-            return ResponseEntity.ok(ticketService.getTicketsByStatus(status));
+        if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
+            TicketStatus ticketStatus = TicketStatus.valueOf(status.toUpperCase());
+            return ResponseEntity.ok(ticketService.getTicketsByStatus(ticketStatus));
         }
+
         return ResponseEntity.ok(ticketService.getAllTickets());
     }
 
@@ -60,13 +62,33 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getTicketById(ticketId));
     }
 
+    @PutMapping("/{ticketId}")
+    public ResponseEntity<Ticket> updateTicketDetails(
+            @PathVariable String ticketId,
+            @RequestBody TicketUpdateRequest request
+    ) {
+        return ResponseEntity.ok(
+                ticketService.updateTicketDetails(
+                        ticketId,
+                        request,
+                        getCurrentUser().getId(),
+                        isAdmin()
+                )
+        );
+    }
+
     @PatchMapping("/{ticketId}/status")
     public ResponseEntity<Ticket> updateTicketStatus(
             @PathVariable String ticketId,
             @RequestBody TicketStatusUpdateRequest request
     ) {
         return ResponseEntity.ok(
-                ticketService.updateTicketStatus(ticketId, request, getCurrentUser().getId(), isAdmin())
+                ticketService.updateTicketStatus(
+                        ticketId,
+                        request,
+                        getCurrentUser().getId(),
+                        isAdmin()
+                )
         );
     }
 
@@ -75,7 +97,9 @@ public class TicketController {
             @PathVariable String ticketId,
             @RequestBody AssignTechnicianRequest request
     ) {
-        return ResponseEntity.ok(ticketService.assignTechnician(ticketId, request, isAdmin()));
+        return ResponseEntity.ok(
+                ticketService.assignTechnician(ticketId, request, isAdmin())
+        );
     }
 
     @DeleteMapping("/{ticketId}")

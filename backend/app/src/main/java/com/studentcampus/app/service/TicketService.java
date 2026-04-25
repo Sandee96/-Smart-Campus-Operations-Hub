@@ -3,6 +3,7 @@ package com.studentcampus.app.service;
 import com.studentcampus.app.dto.AssignTechnicianRequest;
 import com.studentcampus.app.dto.TicketCreateRequest;
 import com.studentcampus.app.dto.TicketStatusUpdateRequest;
+import com.studentcampus.app.dto.TicketUpdateRequest;
 import com.studentcampus.app.model.Ticket;
 import com.studentcampus.app.model.TicketStatus;
 import com.studentcampus.app.repository.TicketRepository;
@@ -53,7 +54,12 @@ public class TicketService {
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
-    public Ticket updateTicketStatus(String ticketId, TicketStatusUpdateRequest request, String userId, boolean isAdmin) {
+    public Ticket updateTicketStatus(
+            String ticketId,
+            TicketStatusUpdateRequest request,
+            String userId,
+            boolean isAdmin
+    ) {
         Ticket ticket = getTicketById(ticketId);
 
         if (!isAdmin && !ticket.getCreatedBy().equals(userId)) {
@@ -62,10 +68,15 @@ public class TicketService {
 
         ticket.setStatus(request.getStatus());
         ticket.setUpdatedAt(Instant.now());
+
         return ticketRepository.save(ticket);
     }
 
-    public Ticket assignTechnician(String ticketId, AssignTechnicianRequest request, boolean isAdmin) {
+    public Ticket assignTechnician(
+            String ticketId,
+            AssignTechnicianRequest request,
+            boolean isAdmin
+    ) {
         if (!isAdmin) {
             throw new AccessDeniedException("Only admins can assign technicians");
         }
@@ -73,6 +84,7 @@ public class TicketService {
         Ticket ticket = getTicketById(ticketId);
         ticket.setAssignedTechnicianId(request.getTechnicianId());
         ticket.setUpdatedAt(Instant.now());
+
         return ticketRepository.save(ticket);
     }
 
@@ -85,4 +97,20 @@ public class TicketService {
 
         ticketRepository.delete(ticket);
     }
+
+  public Ticket updateTicketDetails(String ticketId, TicketUpdateRequest request, String userId, boolean isAdmin) {
+    Ticket ticket = getTicketById(ticketId);
+
+    if (!isAdmin && !ticket.getCreatedBy().equals(userId)) {
+        throw new AccessDeniedException("You can only update your own tickets");
+    }
+
+    ticket.setLocation(request.getLocation());
+    ticket.setDescription(request.getDescription());
+    ticket.setPriority(request.getPriority());
+    ticket.setContactDetails(request.getContactDetails());
+    ticket.setUpdatedAt(Instant.now());
+
+    return ticketRepository.save(ticket);
+}
 }

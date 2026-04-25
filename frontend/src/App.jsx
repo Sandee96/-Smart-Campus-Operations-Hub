@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-
+import './App.css'
 // ── Layout ────────────────────────────────────────────────────
 import Sidebar from './components/layout/Sidebar'
 
@@ -24,6 +24,13 @@ import QrCheckinPage     from './pages/QrCheckinPage'
 import ResourceListPage   from './pages/ResourceListPage'
 import ResourceDetailPage from './pages/ResourceDetailPage'
 import ResourceFormPage   from './pages/ResourceFormPage'
+
+// ── Ticket member's pages ──────────────────────────────────────
+import TicketsPage from './pages/TicketsPage'
+import CreateTicketPage from './pages/CreateTicketPage'
+import TicketDetailsPage from './pages/TicketDetailsPage'
+import EditTicketPage from './pages/EditTicketPage'
+
 
 // ── Placeholders for other teammates ─────────────────────────
 const Placeholder = ({ name }) => (
@@ -302,9 +309,12 @@ export default function App() {
                   <Route path="resources/edit/:id"     element={<ResourceFormPage />} />
                   <Route path="admin/resources"        element={<ResourceListPage mode="manage" />} />
 
-                  {/* ── TICKET member ────────────────────── */}
-                  <Route path="tickets"  element={<Placeholder name="🎫 Tickets" />} />
-                  <Route path="comments" element={<Placeholder name="💬 Comments" />} />
+                 {/* ── TICKET member ────────────────────── */}
+<Route path="tickets" element={<TicketsPage />} />
+<Route path="tickets/new" element={<CreateTicketPage />} />
+<Route path="tickets/:id" element={<TicketDetailsPage />} />
+<Route path="tickets/edit/:id" element={<EditTicketPage />} />
+
 
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
