@@ -23,9 +23,8 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-    // -------------------------------------------------------
     // Helper — get the currently logged-in user from JWT
-    // -------------------------------------------------------
+
     private UserPrincipal currentUser() {
         return (UserPrincipal) SecurityContextHolder
                 .getContext()
@@ -33,10 +32,9 @@ public class BookingController {
                 .getPrincipal();
     }
 
-    // -------------------------------------------------------
-    // POST /api/bookings → Create a new booking request
+    // POST /api/bookings - Create a new booking request
     // Auth: USER, ADMIN
-    // -------------------------------------------------------
+
     @PostMapping
     public ResponseEntity<ApiResponse<BookingResponseDto>> createBooking(
             @Valid @RequestBody BookingRequestDto dto) {
@@ -53,10 +51,9 @@ public class BookingController {
                 .body(ApiResponse.success("Booking request submitted successfully", response));
     }
 
-    // -------------------------------------------------------
-    // GET /api/bookings/my → Get current user's bookings
+    // GET /api/bookings/my - Get current user's bookings
     // Auth: USER, ADMIN
-    // -------------------------------------------------------
+
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<BookingResponseDto>>> getMyBookings() {
 
@@ -66,10 +63,9 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("Bookings retrieved", bookings));
     }
 
-    // -------------------------------------------------------
     // GET /api/bookings → Get all bookings (Admin only)
     // Auth: ADMIN
-    // -------------------------------------------------------
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<BookingResponseDto>>> getAllBookings() {
 
@@ -77,10 +73,9 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("All bookings retrieved", bookings));
     }
 
-    // -------------------------------------------------------
     // GET /api/bookings/{id} → Get a specific booking by ID
     // Auth: USER (own booking), ADMIN (any)
-    // -------------------------------------------------------
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<BookingResponseDto>> getBookingById(
             @PathVariable String id) {
@@ -89,10 +84,9 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("Booking retrieved", booking));
     }
 
-    // -------------------------------------------------------
     // PATCH /api/bookings/{id}/action → Admin approve/reject
     // Auth: ADMIN
-    // -------------------------------------------------------
+
     @PatchMapping("/{id}/action")
     public ResponseEntity<ApiResponse<BookingResponseDto>> processAdminAction(
             @PathVariable String id,
@@ -104,10 +98,9 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("Booking status updated", response));
     }
 
-    // -------------------------------------------------------
-    // DELETE /api/bookings/{id} → Cancel a booking
+    // DELETE /api/bookings/{id} - Cancel a booking
     // Auth: USER (own booking only), ADMIN (any)
-    // -------------------------------------------------------
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<BookingResponseDto>> cancelBooking(
             @PathVariable String id) {
@@ -118,10 +111,9 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success("Booking cancelled", response));
     }
 
-    // -------------------------------------------------------
-    // POST /api/bookings/checkin → QR code check-in
+    // POST /api/bookings/checkin - QR code check-in
     // Auth: Public (token is the auth mechanism)
-    // -------------------------------------------------------
+
     @PostMapping("/checkin")
     public ResponseEntity<ApiResponse<BookingResponseDto>> checkIn(
             @RequestParam String token) {
