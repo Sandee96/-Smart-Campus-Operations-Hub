@@ -25,11 +25,9 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
-    private final NotificationService notificationService; // ✅ injected
+    private final NotificationService notificationService;
 
-    // -------------------------------------------------------
     // CREATE BOOKING
-    // -------------------------------------------------------
     public BookingResponseDto createBooking(BookingRequestDto dto,
             String userId, String userName, String userEmail) {
 
@@ -70,7 +68,7 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        // ✅ Notify user — booking submitted
+        // Notify user — booking submitted
         try {
             notificationService.createNotification(
                     NotificationTriggerHelper.booking(
@@ -87,34 +85,30 @@ public class BookingService {
         return toDto(saved);
     }
 
-    // -------------------------------------------------------
     // GET BOOKINGS FOR CURRENT USER
-    // -------------------------------------------------------
+
     public List<BookingResponseDto> getMyBookings(String userId) {
         return bookingRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    // -------------------------------------------------------
     // GET ALL BOOKINGS (ADMIN)
-    // -------------------------------------------------------
+
     public List<BookingResponseDto> getAllBookings() {
         return bookingRepository.findAllByOrderByCreatedAtDesc()
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    // -------------------------------------------------------
     // GET BOOKING BY ID
-    // -------------------------------------------------------
+
     public BookingResponseDto getBookingById(String id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + id));
         return toDto(booking);
     }
 
-    // -------------------------------------------------------
     // ADMIN: APPROVE OR REJECT
-    // -------------------------------------------------------
+
     public BookingResponseDto processAdminAction(String bookingId,
             AdminActionDto dto, String adminId) {
 
@@ -132,7 +126,7 @@ public class BookingService {
             booking.setQrToken(UUID.randomUUID().toString());
             booking.setApprovedBy(adminId);
 
-            // ✅ Notify user — booking approved
+            // Notify user — booking approved
             try {
                 notificationService.createNotification(
                         NotificationTriggerHelper.booking(
@@ -149,7 +143,7 @@ public class BookingService {
         } else if (dto.getAction() == BookingStatus.REJECTED) {
             booking.setStatus(BookingStatus.REJECTED);
 
-            // ✅ Notify user — booking rejected
+            // Notify user — booking rejected
             try {
                 notificationService.createNotification(
                         NotificationTriggerHelper.booking(
@@ -174,9 +168,8 @@ public class BookingService {
         return toDto(bookingRepository.save(booking));
     }
 
-    // -------------------------------------------------------
     // CANCEL BOOKING
-    // -------------------------------------------------------
+
     public BookingResponseDto cancelBooking(String bookingId, String userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException(
@@ -195,7 +188,7 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
 
-        // ✅ Notify user — booking cancelled
+        // Notify user — booking cancelled
         try {
             notificationService.createNotification(
                     NotificationTriggerHelper.booking(
@@ -212,9 +205,8 @@ public class BookingService {
         return toDto(saved);
     }
 
-    // -------------------------------------------------------
     // QR CHECK-IN
-    // -------------------------------------------------------
+
     public BookingResponseDto checkInByQr(String qrToken) {
         Booking booking = bookingRepository.findByQrToken(qrToken)
                 .orElseThrow(() -> new RuntimeException(
@@ -241,9 +233,8 @@ public class BookingService {
         return toDto(bookingRepository.save(booking));
     }
 
-    // -------------------------------------------------------
     // MAPPER
-    // -------------------------------------------------------
+
     private BookingResponseDto toDto(Booking b) {
         BookingResponseDto dto = new BookingResponseDto();
         dto.setId(b.getId());
