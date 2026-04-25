@@ -23,6 +23,7 @@ export const deleteTicket = (id) => API.delete(`/${id}`);
 export const updateTicketDetails = (id, data) => API.put(`/${id}`, data);
 export const assignTechnician = (id, data) => API.patch(`/${id}/assign`, data);
 
+
 // comments
 export const getComments = (ticketId) => API.get(`/${ticketId}/comments`);
 export const addComment = (ticketId, data) =>

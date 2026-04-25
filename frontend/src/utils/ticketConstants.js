@@ -7,7 +7,12 @@ export const TICKET_CATEGORIES = [
   "OTHER",
 ];
 
-export const TICKET_PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+export const TICKET_PRIORITIES = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
+];
 
 export const TICKET_STATUSES = [
   "OPEN",
