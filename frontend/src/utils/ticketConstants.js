@@ -1,9 +1,25 @@
+ feature/chamini/ticket-frontend
+export const TICKET_CATEGORIES = [
+  "ELECTRICAL",
+  "PLUMBING",
+  "NETWORK",
+  "EQUIPMENT",
+  "CLEANING",
+  "OTHER",
+];
+
+export const TICKET_PRIORITIES = ["LOW", "MEDIUM", "HIGH"];
+
+
+main
 export const TICKET_STATUSES = [
   "OPEN",
   "IN_PROGRESS",
   "RESOLVED",
   "CLOSED",
   "REJECTED",
+ feature/chamini/ticket-frontend
+
 ];
 
 export const TICKET_PRIORITIES = [
@@ -20,4 +36,5 @@ export const TICKET_CATEGORIES = [
   "Network",
   "Cleaning",
   "Other",
+ main
 ];

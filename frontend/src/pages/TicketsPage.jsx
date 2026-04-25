@@ -1,23 +1,71 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+feature/chamini/ticket-frontend
+import {
+  deleteTicket,
+  getAllTickets,
+  getMyTickets,
+  updateTicketStatus,
+  assignTechnician,
+} from "../api/ticketApi";
+import TicketCard from "../components/tickets/TicketCard";
+import TicketFilters from "../components/tickets/TicketFilters";
+
+// ✅ Get logged-in user from localStorage
+function getStoredUser() {
+  try {
+    const raw =
+      localStorage.getItem("smartcampus_user") ||
+      localStorage.getItem("user") ||
+      null;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+
 import { getMyTickets } from "../api/ticketApi";
 import TicketCard from "../components/tickets/TicketCard";
 import TicketFilters from "../components/tickets/TicketFilters";
 
+ main
 export default function TicketsPage() {
   const [tickets, setTickets] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+feature/chamini/ticket-frontend
+  const user = getStoredUser();
+
+  const isAdmin =
+    user?.role === "ROLE_ADMIN" ||
+    user?.role === "ADMIN" ||
+    (user?.roles || "").includes("ADMIN");
+
+
+ main
   useEffect(() => {
     fetchTickets();
   }, []);
+
+ feature/chamini/ticket-frontend
+  // ✅ FIX: Admin vs User API
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+
+      const res = isAdmin
+        ? await getAllTickets()
+        : await getMyTickets();
+
 
   const fetchTickets = async () => {
     try {
       setLoading(true);
       const res = await getMyTickets();
+main
       setTickets(res.data);
     } catch (error) {
       console.error("Failed to fetch tickets", error);
@@ -26,6 +74,71 @@ export default function TicketsPage() {
     }
   };
 
+feature/chamini/ticket-frontend
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this ticket?"
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteTicket(id);
+      alert("Ticket deleted successfully");
+      fetchTickets();
+    } catch (error) {
+      console.error("Delete failed", error);
+      alert("Delete failed");
+    }
+  };
+
+ const handleUpdate = async (id) => {
+  if (isAdmin) {
+    const newStatus = window.prompt(
+      "Select status by typing number:\n1. OPEN\n2. IN_PROGRESS\n3. RESOLVED\n4. CLOSED\n5. REJECTED"
+    );
+
+    const statusMap = {
+      "1": "OPEN",
+      "2": "IN_PROGRESS",
+      "3": "RESOLVED",
+      "4": "CLOSED",
+      "5": "REJECTED",
+    };
+
+    const selectedStatus = statusMap[newStatus];
+
+    if (!selectedStatus) return;
+
+    try {
+      await updateTicketStatus(id, { status: selectedStatus });
+      alert("Ticket status updated successfully");
+      fetchTickets();
+    } catch (error) {
+      console.error("Update failed", error);
+      alert("Update failed");
+    }
+  } else {
+    navigate(`/tickets/edit/${id}`);
+  }
+};
+
+  const handleAssign = async (id) => {
+  const technicianId = window.prompt("Enter technician ID or email");
+
+  if (!technicianId) return;
+
+  try {
+    await assignTechnician(id, { technicianId });
+    alert("Technician assigned successfully");
+    fetchTickets();
+  } catch (error) {
+    console.error("Assign failed", error);
+    alert("Failed to assign technician");
+  }
+};
+
+
+ main
   const filteredTickets = useMemo(() => {
     if (selectedStatus === "ALL") return tickets;
     return tickets.filter((ticket) => ticket.status === selectedStatus);
@@ -36,14 +149,43 @@ export default function TicketsPage() {
       <div className="page-card">
         <div className="action-row">
           <div>
+ feature/chamini/ticket-frontend
+            <h1 className="page-title">
+              {isAdmin ? "All Tickets" : "My Tickets"}
+            </h1>
+            <p className="page-subtitle">
+              {isAdmin
+                ? "Manage all reported incidents"
+                : "Track your reported maintenance issues"}
+            </p>
+
             <h1 className="page-title">My Tickets</h1>
             <p className="page-subtitle">Track your reported maintenance issues</p>
+ main
           </div>
 
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <button onClick={fetchTickets} className="secondary-btn">
               Refresh
             </button>
+  feature/chamini/ticket-frontend
+
+            {!isAdmin && (
+              <button
+                onClick={() => navigate("/tickets/new")}
+                className="primary-btn"
+              >
+                + New Ticket
+              </button>
+            )}
+          </div>
+        </div>
+
+        <TicketFilters
+          selected={selectedStatus}
+          onChange={setSelectedStatus}
+        />
+
             <button
               onClick={() => navigate("/tickets/new")}
               className="primary-btn"
@@ -54,10 +196,28 @@ export default function TicketsPage() {
         </div>
 
         <TicketFilters selected={selectedStatus} onChange={setSelectedStatus} />
+ main
 
         {loading ? (
           <p className="page-subtitle">Loading tickets...</p>
         ) : filteredTickets.length === 0 ? (
+ feature/chamini/ticket-frontend
+          <div className="alert alert-error">
+            No tickets found for this filter.
+          </div>
+        ) : (
+          <div className="ticket-grid">
+            {filteredTickets.map((ticket) => (
+             <TicketCard
+  key={ticket.id}
+  ticket={ticket}
+  isAdmin={isAdmin}
+  onView={(id) => navigate(`/tickets/${id}`)}
+  onUpdate={handleUpdate}
+  onDelete={handleDelete}
+  onAssign={handleAssign}
+/>
+
           <div className="alert alert-error">No tickets found for this filter.</div>
         ) : (
           <div className="ticket-grid">
@@ -67,6 +227,7 @@ export default function TicketsPage() {
                 ticket={ticket}
                 onClick={() => navigate(`/tickets/${ticket.id}`)}
               />
+main
             ))}
           </div>
         )}
