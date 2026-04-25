@@ -15,7 +15,7 @@ const ResourceCard = ({ resource, onDelete, isAdmin }) => {
     return (
         <div className="bg-white rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 hover:border-gray-300 hover:-translate-y-1 flex flex-col h-full">
             {/* Top gradient bar */}
-            <div className={`h-2 bg-gradient-to-r ${config.color}`} />
+            <div className={`h-2 bg-linear-to-r ${config.color}`} />
 
             <div className="p-6 flex-1 flex flex-col">
                 {/* Header */}
