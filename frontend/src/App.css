@@ -573,6 +573,7 @@ textarea {
   .comment-input-row {
     flex-direction: column;
   }
+feature/chamini/ticket-frontend
 }
 
 .ticket-actions {
@@ -743,4 +744,6 @@ textarea {
   font-size: 16px;
   font-weight: 800;
   color: #0f172a;
+
+ main
 }

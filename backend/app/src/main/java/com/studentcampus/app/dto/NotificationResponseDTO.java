@@ -20,6 +20,7 @@ public class NotificationResponseDTO {
     private boolean read;
     private LocalDateTime createdAt;
 
+    // Static factory — converts Notification model to DTO
     public static NotificationResponseDTO from(Notification notification) {
         return NotificationResponseDTO.builder()
                 .id(notification.getId())

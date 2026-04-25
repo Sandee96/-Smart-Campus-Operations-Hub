@@ -554,3 +554,17 @@ tbody tr:hover { background: #fafafa; }
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
+
+/* Responsive utility for auth pages */
+@media (max-width: 768px) {
+  .login-left-panel {
+    display: none !important;
+  }
+  .desktop-nav {
+    display: none !important;
+  }
+  .step-line {
+    display: none !important;
+  }
+}
+

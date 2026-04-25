@@ -1,6 +1,12 @@
+import { useLocation } from 'react-router-dom'
 import BookingForm from '../components/booking/BookingForm'
 
 export default function CreateBookingPage() {
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const resourceId = params.get('resourceId') || ''
+  const prefilledResource = location.state?.resource || null
+
   return (
     <div className="page-wrapper-sm animate-fade-up">
       {/* Hero header */}
@@ -29,7 +35,7 @@ export default function CreateBookingPage() {
 
       {/* Form card */}
       <div className="card-flat" style={{ padding:'28px 32px' }}>
-        <BookingForm />
+        <BookingForm prefillResourceId={resourceId} prefilledResource={prefilledResource} />
       </div>
     </div>
   )

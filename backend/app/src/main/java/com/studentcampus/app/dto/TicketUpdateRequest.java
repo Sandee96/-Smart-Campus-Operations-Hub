@@ -9,4 +9,9 @@ public class TicketUpdateRequest {
     private String description;
     private Priority priority;
     private String contactDetails;
+ feature/chamini/ticket-frontend
 }
+
+}
+
+ main
