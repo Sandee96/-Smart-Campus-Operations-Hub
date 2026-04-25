@@ -115,6 +115,7 @@ const ProtectedLayout = ({ children }) => {
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
 
+  // Capture token from OAuth2 redirect URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token  = params.get('token')
