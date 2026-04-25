@@ -1,122 +1,155 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { addComment, getComments, getTicketById } from "../api/ticketApi";
-import TicketStatusBadge from "../components/tickets/TicketStatusBadge";
+import {
+  getTicketById,
+  getComments,
+  addComment,
+  updateComment,
+  deleteComment,
+} from "../api/ticketApi";
+
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("smartcampus_user"));
+  } catch {
+    return null;
+  }
+}
 
 export default function TicketDetailsPage() {
   const { id } = useParams();
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentBody, setCommentBody] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  const user = getStoredUser();
+
+  const isAdmin =
+    user?.role === "ROLE_ADMIN" ||
+    (user?.roles || "").includes("ADMIN");
 
   useEffect(() => {
     fetchTicket();
     fetchComments();
-  }, [id]);
+  }, []);
 
   const fetchTicket = async () => {
-    try {
-      const res = await getTicketById(id);
-      setTicket(res.data);
-    } catch (error) {
-      console.error("Failed to fetch ticket", error);
-    }
+    const res = await getTicketById(id);
+    setTicket(res.data);
   };
 
   const fetchComments = async () => {
-    try {
-      const res = await getComments(id);
-      setComments(res.data);
-    } catch (error) {
-      console.error("Failed to fetch comments", error);
-    }
+    const res = await getComments(id);
+    setComments(res.data);
   };
 
-  const handleAddComment = async (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
     if (!commentBody.trim()) return;
-    try {
-      await addComment(id, { body: commentBody });
-      setCommentBody("");
-      fetchComments();
-    } catch (error) {
-      console.error("Failed to add comment", error);
-      alert("Failed to add comment");
-    }
+
+    await addComment(id, { body: commentBody });
+    setCommentBody("");
+    fetchComments();
   };
 
-  if (!ticket) {
-    return <div className="main-content">Loading...</div>;
-  }
+  const handleDelete = async (commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+
+    await deleteComment(commentId);
+    fetchComments();
+  };
+
+  const handleEdit = async (commentId) => {
+    await updateComment(commentId, { body: editText });
+    setEditingId(null);
+    fetchComments();
+  };
+
+  if (!ticket) return <p>Loading...</p>;
 
   return (
     <div className="main-content">
-      <div className="details-card">
-        <div className="ticket-card-header">
-          <div>
-            <h1 className="page-title">{ticket.category}</h1>
-            <p className="page-subtitle">{ticket.location}</p>
-          </div>
-          <TicketStatusBadge status={ticket.status} />
-        </div>
+      <h2>{ticket.category}</h2>
 
-        <p className="ticket-desc">{ticket.description}</p>
+      {/* ❌ Hide input if CLOSED */}
+      {ticket.status !== "CLOSED" && (
+        <form onSubmit={handleAdd} className="comment-form">
+          <textarea
+            value={commentBody}
+            onChange={(e) => setCommentBody(e.target.value)}
+            placeholder="Add a comment..."
+            className="comment-input"
+          />
+          <button className="ticket-primary-btn">Add Comment</button>
+        </form>
+      )}
 
-        <div className="info-boxes">
-          <div className="info-box">
-            <p className="info-label">Priority</p>
-            <p className="info-value">{ticket.priority}</p>
-          </div>
+      {ticket.status === "CLOSED" && (
+        <p className="closed-note">
+          Comments are disabled because this ticket is closed.
+        </p>
+      )}
 
-          <div className="info-box">
-            <p className="info-label">Resource ID</p>
-            <p className="info-value">{ticket.resourceId || "No resource"}</p>
-          </div>
+      <div className="comments-list">
+        {comments.map((c) => {
+          const isOwner = c.authorId === user?.id;
 
-          <div className="info-box">
-            <p className="info-label">Contact Details</p>
-            <p className="info-value">{ticket.contactDetails}</p>
-          </div>
+          return (
+            <div key={c.id} className="comment-card">
+              <div className="comment-header">
+                <strong>{c.authorName}</strong>
+                <span>{c.createdAt}</span>
+              </div>
 
-          <div className="info-box">
-            <p className="info-label">Assigned Technician</p>
-            <p className="info-value">
-              {ticket.assignedTechnicianId || "Not assigned"}
-            </p>
-          </div>
-        </div>
+              {/* ✏️ EDIT MODE */}
+              {editingId === c.id ? (
+                <>
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                  />
 
-        <div className="comments-section">
-          <h2 className="comments-title">Comments</h2>
+                  <button onClick={() => handleEdit(c.id)}>
+                    Save
+                  </button>
 
-          <form onSubmit={handleAddComment} className="comment-form">
-            <textarea
-              value={commentBody}
-              onChange={(e) => setCommentBody(e.target.value)}
-              placeholder="Add a comment..."
-              className="comment-input"
-            />
-            <button type="submit" className="ticket-primary-btn">
-              Add Comment
-            </button>
-          </form>
+                  <button onClick={() => setEditingId(null)}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <p>{c.body}</p>
+              )}
 
-          <div className="comments-list">
-            {comments.length === 0 ? (
-              <p className="page-subtitle">No comments yet.</p>
-            ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="comment-card">
-                  <div className="comment-header">
-                    <strong>{comment.authorName || "User"}</strong>
-                    <span>{comment.createdAt || ""}</span>
-                  </div>
-                  <p>{comment.body}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+              {/* ✅ Show buttons based on rules */}
+              <div className="comment-actions">
+                {/* EDIT → only owner */}
+                {isOwner && editingId !== c.id && (
+                  <button
+                    onClick={() => {
+                      setEditingId(c.id);
+                      setEditText(c.body);
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                {/* DELETE → owner OR admin */}
+                {(isOwner || isAdmin) && (
+                  <button
+                    className="danger-btn"
+                    onClick={() => handleDelete(c.id)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

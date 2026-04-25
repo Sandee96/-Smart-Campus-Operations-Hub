@@ -643,4 +643,16 @@ textarea {
   .comment-input-row {
     flex-direction: column;
   }
+
+  .comment-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.closed-note {
+  color: #ef4444;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
 }
