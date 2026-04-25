@@ -77,7 +77,7 @@ const ResourceFormPage = () => {
 
         const cap = parseInt(formData.capacity);
         if (!cap || cap < 1 || cap > 1000) {
-            setError('Capacity must be between 1 and 1000.');
+            setError('Capacity must be between 1 and 5000.');
             return;
         }
 
