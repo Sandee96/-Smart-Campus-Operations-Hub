@@ -19,10 +19,14 @@ export const createTicket = (data) => API.post("", data);
 export const updateTicketStatus = (id, data) =>
   API.patch(`/${id}/status`, data);
 export const deleteTicket = (id) => API.delete(`/${id}`);
-
 export const updateTicketDetails = (id, data) => API.put(`/${id}`, data);
 export const assignTechnician = (id, data) => API.patch(`/${id}/assign`, data);
 
+export const updateComment = (commentId, data) =>
+  API.put(`/comments/${commentId}`, data);
+
+export const deleteComment = (commentId) =>
+  API.delete(`/comments/${commentId}`);
 
 // comments
 export const getComments = (ticketId) => API.get(`/${ticketId}/comments`);
