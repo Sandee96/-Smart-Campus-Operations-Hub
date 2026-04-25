@@ -10,15 +10,16 @@ import java.util.List;
 @Repository
 public interface TicketRepository extends MongoRepository<Ticket, String> {
 
-    List<Ticket> findByReportedBy(String reportedBy);
+    // ✅ FIXED: match your Ticket model field names
+    List<Ticket> findByCreatedBy(String createdBy);
 
     List<Ticket> findByStatus(TicketStatus status);
 
-    List<Ticket> findByAssignedTo(String assignedTo);
+    List<Ticket> findByAssignedTechnicianId(String assignedTechnicianId);
 
     List<Ticket> findByCategory(String category);
 
     List<Ticket> findByLocation(String location);
 
-    List<Ticket> findByReportedByAndStatus(String reportedBy, TicketStatus status);
+    List<Ticket> findByCreatedByAndStatus(String createdBy, TicketStatus status);
 }

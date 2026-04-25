@@ -10,4 +10,3 @@ public class TicketUpdateRequest {
     private Priority priority;
     private String contactDetails;
 }
-

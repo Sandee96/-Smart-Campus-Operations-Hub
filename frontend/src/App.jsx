@@ -1,11 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect }                                          from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
+import { Toaster }                                             from 'react-hot-toast'
+import './App.css'
 
-// ── Layout ────────────────────────────────────────────────────
+// ── Layout ─────────────────────────────────────────────────────
 import Sidebar from './components/layout/Sidebar'
 
-// ── Jayani's pages ────────────────────────────────────────────
+// ── Jayani's pages ─────────────────────────────────────────────
 import Dashboard               from './pages/Dashboard'
 import NotificationsPage       from './pages/NotificationsPage'
 import AdminUsersPage          from './pages/AdminUsersPage'
@@ -13,13 +14,13 @@ import NotificationPreferences from './pages/NotificationPreferences'
 import LoginPage               from './pages/LoginPage'
 import AuthCallback            from './pages/AuthCallback'
 import Unauthorized403         from './pages/Unauthorized403'
-import RegisterPage  from './pages/RegisterPage'
-import PendingPage   from './pages/PendingPage'
-import RejectedPage  from './pages/RejectedPage'
-import ApprovedPage  from './pages/ApprovedPage'
-import LandingPage   from './pages/LandingPage'
+import RegisterPage            from './pages/RegisterPage'
+import PendingPage             from './pages/PendingPage'
+import RejectedPage            from './pages/RejectedPage'
+import ApprovedPage            from './pages/ApprovedPage'
+import LandingPage             from './pages/LandingPage'
 
-// ── Booking member's pages ────────────────────────────────────
+// ── Booking member's pages ─────────────────────────────────────
 import BookingsPage      from './pages/BookingsPage'
 import CreateBookingPage from './pages/CreateBookingPage'
 import BookingDetailPage from './pages/BookingDetailPage'
@@ -30,7 +31,13 @@ import ResourceListPage   from './pages/ResourceListPage'
 import ResourceDetailPage from './pages/ResourceDetailPage'
 import ResourceFormPage   from './pages/ResourceFormPage'
 
-// ── Placeholders for other teammates ─────────────────────────
+// ── Ticket member's pages ──────────────────────────────────────
+import TicketsPage       from './pages/TicketsPage'
+import CreateTicketPage  from './pages/CreateTicketPage'
+import TicketDetailsPage from './pages/TicketDetailsPage'
+import EditTicketPage    from './pages/EditTicketPage'
+
+// ── Placeholder ────────────────────────────────────────────────
 const Placeholder = ({ name }) => (
   <div style={{ padding: '40px 0' }}>
     <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>{name}</h1>
@@ -38,7 +45,7 @@ const Placeholder = ({ name }) => (
   </div>
 )
 
-// ── Auth helpers ──────────────────────────────────────────────
+// ── Auth helpers ───────────────────────────────────────────────
 function getStoredUser() {
   try {
     const raw = localStorage.getItem('smartcampus_user') || localStorage.getItem('user') || null
@@ -62,7 +69,7 @@ function hasRole(role) {
   return (user.roles || user.role || '').includes(role)
 }
 
-// ── Protected route ───────────────────────────────────────────
+// ── Route guards ───────────────────────────────────────────────
 const ProtectedRoute = ({ children, role }) => {
   if (!isLoggedIn())          return <Navigate to="/login" replace />
   if (role && !hasRole(role)) return <Navigate to="/403"   replace />
@@ -74,7 +81,7 @@ const PublicRoute = ({ children }) => {
   return children
 }
 
-// ── Main layout: sidebar + content (no navbar) ───────────────
+// ── Main layout: sidebar + content ────────────────────────────
 function MainLayout({ children }) {
   const navigate = useNavigate()
 
@@ -93,7 +100,6 @@ function MainLayout({ children }) {
       background: '#f8fafc',
     }}>
       <Sidebar onLogout={handleLogout} />
-
       <main style={{
         flex: 1,
         overflowY: 'auto',
@@ -112,15 +118,13 @@ const ProtectedLayout = ({ children }) => {
   return <MainLayout>{children}</MainLayout>
 }
 
-// ── Root App ──────────────────────────────────────────────────
+// ── Root App ───────────────────────────────────────────────────
 export default function App() {
 
   // Capture token from OAuth2 redirect URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token  = params.get('token')
-    // We only process it here if it's NOT the auth callback (e.g. if backend redirects to /dashboard?token=)
-    // AuthCallback handles /auth/callback explicitly.
     if (token && !window.location.pathname.includes('/auth/')) {
       localStorage.setItem('token', token)
       try {
@@ -158,7 +162,8 @@ export default function App() {
       />
 
       <Routes>
-        {/* ── Public (no sidebar) ────────────────────────── */}
+
+        {/* ── Public (no sidebar) ──────────────────────────── */}
         <Route path="/"              element={<PublicRoute><LandingPage /></PublicRoute>} />
         <Route path="/login"         element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -169,13 +174,13 @@ export default function App() {
         <Route path="/403"           element={<Unauthorized403 />} />
         <Route path="/checkin"       element={<QrCheckinPage />} />
 
-        {/* ── Protected (sidebar only) ────────────────────── */}
+        {/* ── Protected (sidebar layout) ───────────────────── */}
         <Route path="/*" element={
           <ProtectedLayout>
             <Routes>
               <Route index element={<Navigate to="/dashboard" replace />} />
 
-              {/* ── JAYANI's pages ───────────────────── */}
+              {/* ── Jayani's pages ─────────────────────────── */}
               <Route path="dashboard"     element={<Dashboard />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="settings"      element={<NotificationPreferences />} />
@@ -185,28 +190,41 @@ export default function App() {
                 </ProtectedRoute>
               } />
 
-              {/* ── BOOKING member's pages ───────────── */}
+              {/* ── Booking member's pages ──────────────────── */}
               <Route path=""               element={<BookingsPage mode="my" />} />
               <Route path="bookings"       element={<BookingsPage mode="my" />} />
-              <Route path="admin/bookings" element={<BookingsPage mode="admin" />} />
               <Route path="bookings/new"   element={<CreateBookingPage />} />
               <Route path="bookings/:id"   element={<BookingDetailPage />} />
+              <Route path="admin/bookings" element={
+                <ProtectedRoute role="ADMIN">
+                  <BookingsPage mode="admin" />
+                </ProtectedRoute>
+              } />
 
-              {/* ── RESOURCE member ──────────────────── */}
-              <Route path="resources"          element={<ResourceListPage mode="catalogue" />} />
-              <Route path="resources/:id"      element={<ResourceDetailPage />} />
-              <Route path="resources/create"   element={<ResourceFormPage />} />
-              <Route path="resources/edit/:id" element={<ResourceFormPage />} />
-              <Route path="admin/resources"    element={<ResourceListPage mode="manage" />} />
+              {/* ── Resource member's pages ─────────────────── */}
+              <Route path="resources"              element={<ResourceListPage mode="catalogue" />} />
+              <Route path="resources/:id"          element={<ResourceDetailPage />} />
+              <Route path="resources/create"       element={<ResourceFormPage />} />
+              <Route path="resources/edit/:id"     element={<ResourceFormPage />} />
+              <Route path="admin/resources"        element={
+                <ProtectedRoute role="ADMIN">
+                  <ResourceListPage mode="manage" />
+                </ProtectedRoute>
+              } />
 
-              {/* ── TICKET member ────────────────────── */}
-              <Route path="tickets"  element={<Placeholder name="🎫 Tickets" />} />
-              <Route path="comments" element={<Placeholder name="💬 Comments" />} />
+              {/* ── Ticket member's pages ───────────────────── */}
+              <Route path="tickets"          element={<TicketsPage />} />
+              <Route path="tickets/new"      element={<CreateTicketPage />} />
+              <Route path="tickets/:id"      element={<TicketDetailsPage />} />
+              <Route path="tickets/edit/:id" element={<EditTicketPage />} />
 
+              {/* ── Fallback ────────────────────────────────── */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
             </Routes>
           </ProtectedLayout>
         } />
+
       </Routes>
     </BrowserRouter>
   )
