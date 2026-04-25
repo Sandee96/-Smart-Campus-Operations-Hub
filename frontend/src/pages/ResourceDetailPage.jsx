@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getResourceById } from '../api/resourceApi';
+import { getResourceById, updateResourceStatus, deleteResource } from '../api/resourceApi';
 
 const typeConfig = {
     LAB: { icon: '🖥️', label: 'Lab' },
@@ -15,6 +15,38 @@ const ResourceDetailPage = () => {
     const [resource, setResource] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // ── Admin check ──────────────────────────────────────────────────────────
+    const token = localStorage.getItem('token');
+    let isAdmin = false;
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            isAdmin = payload.roles === 'ADMIN' ||
+                (Array.isArray(payload.roles) && payload.roles.includes('ADMIN'));
+        } catch (e) { isAdmin = false; }
+    }
+
+    // ── Admin handlers ────────────────────────────────────────────────────────
+    const handleStatusChange = async (newStatus) => {
+        try {
+            const updated = await updateResourceStatus(id, newStatus);
+            setResource(updated);
+        } catch (err) {
+            alert('Failed to update status.');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm('Delete this resource?')) {
+            try {
+                await deleteResource(id);
+                navigate('/resources');
+            } catch (err) {
+                alert('Failed to delete.');
+            }
+        }
+    };
 
     useEffect(() => { fetchResource(); }, [id]);
 
@@ -61,7 +93,7 @@ const ResourceDetailPage = () => {
     return (
         <div className="page-wrapper-sm animate-fade-up">
 
-            {/* Hero Banner — matches team style */}
+            {/* Hero Banner */}
             <div style={{
                 background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
                 borderRadius: 16, padding: '28px 32px', marginBottom: 28,
@@ -114,7 +146,7 @@ const ResourceDetailPage = () => {
                     </span>
                 </div>
 
-                {/* Primary action */}
+                {/* Book button */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
                     <button
                         type="button"
@@ -220,6 +252,48 @@ const ResourceDetailPage = () => {
                 <span>Created: {new Date(resource.createdAt).toLocaleString()}</span>
                 <span>Updated: {new Date(resource.updatedAt).toLocaleString()}</span>
             </div>
+
+            {/* Admin Actions */}
+            {isAdmin && (
+                <div className="card" style={{ padding: '22px 24px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+                        ⚙️ Admin Actions
+                    </p>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <button
+                            onClick={() => navigate(`/resources/edit/${resource.id}`)}
+                            className="btn btn-sm"
+                            style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}
+                        >
+                            ✏️ Edit Resource
+                        </button>
+                        {isActive ? (
+                            <button
+                                onClick={() => handleStatusChange('OUT_OF_SERVICE')}
+                                className="btn btn-sm"
+                                style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa' }}
+                            >
+                                🔴 Mark Out of Service
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => handleStatusChange('ACTIVE')}
+                                className="btn btn-sm"
+                                style={{ background: 'var(--success-light)', color: 'var(--success)', border: '1px solid #bbf7d0' }}
+                            >
+                                🟢 Mark Active
+                            </button>
+                        )}
+                        <button
+                            onClick={handleDelete}
+                            className="btn btn-danger btn-sm"
+                        >
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
