@@ -58,8 +58,8 @@ export default function BookingForm({ prefillResourceId = '', prefilledResource 
     try {
       await bookingApi.createBooking({
         ...form,
-        startTime: form.startTime,  // ✅ send as-is, no UTC conversion
-        endTime:   form.endTime,    // ✅ send as-is, no UTC conversion
+        startTime: form.startTime,  //  send as-is, no UTC conversion
+        endTime:   form.endTime,    //  send as-is, no UTC conversion
         expectedAttendees: parseInt(form.expectedAttendees) || 1,
       })
       toast.success('Booking request submitted!')
