@@ -36,3 +36,7 @@ build/
 .env
 src/main/resources/application.properties
 src/main/resources/application.yml
+
+backend/app/uploads/
+node_modules/
+frontend/node_modules/

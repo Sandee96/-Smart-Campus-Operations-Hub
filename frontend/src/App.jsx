@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-
+import './App.css'
 // ── Layout ────────────────────────────────────────────────────
 import Sidebar from './components/layout/Sidebar'
 
@@ -29,6 +29,13 @@ import QrCheckinPage     from './pages/QrCheckinPage'
 import ResourceListPage   from './pages/ResourceListPage'
 import ResourceDetailPage from './pages/ResourceDetailPage'
 import ResourceFormPage   from './pages/ResourceFormPage'
+
+// ── Ticket member's pages ──────────────────────────────────────
+import TicketsPage from './pages/TicketsPage'
+import CreateTicketPage from './pages/CreateTicketPage'
+import TicketDetailsPage from './pages/TicketDetailsPage'
+import EditTicketPage from './pages/EditTicketPage'
+
 
 // ── Placeholders for other teammates ─────────────────────────
 const Placeholder = ({ name }) => (
@@ -171,6 +178,50 @@ export default function App() {
 
         {/* ── Protected (sidebar only) ────────────────────── */}
         <Route path="/*" element={
+feature/chamini/ticket-frontend
+          isLoggedIn()
+            ? (
+              <MainLayout>
+                <Routes>
+                  <Route index element={<Navigate to="/dashboard" replace />} />
+
+                  {/* ── JAYANI's pages ───────────────────── */}
+                  <Route path="dashboard"     element={<Dashboard />} />
+                  <Route path="notifications" element={<NotificationsPage />} />
+                  <Route path="settings"      element={<NotificationPreferences />} />
+                  <Route path="admin/users"   element={
+                    hasRole('ADMIN')
+                      ? <AdminUsersPage />
+                      : <Navigate to="/403" replace />
+                  } />
+
+                  {/* ── BOOKING member's pages ───────────── */}
+                  <Route path=""               element={<BookingsPage mode="my" />} />
+                  <Route path="bookings"       element={<BookingsPage mode="my" />} />
+                  <Route path="admin/bookings" element={<BookingsPage mode="admin" />} />
+                  <Route path="bookings/new"   element={<CreateBookingPage />} />
+                  <Route path="bookings/:id"   element={<BookingDetailPage />} />
+
+                  {/* ── RESOURCE member ──────────────────── */}
+                  <Route path="resources"              element={<ResourceListPage mode="catalogue" />} />
+                  <Route path="resources/:id"          element={<ResourceDetailPage />} />
+                  <Route path="resources/create"       element={<ResourceFormPage />} />
+                  <Route path="resources/edit/:id"     element={<ResourceFormPage />} />
+                  <Route path="admin/resources"        element={<ResourceListPage mode="manage" />} />
+
+                 {/* ── TICKET member ────────────────────── */}
+<Route path="tickets" element={<TicketsPage />} />
+<Route path="tickets/new" element={<CreateTicketPage />} />
+<Route path="tickets/:id" element={<TicketDetailsPage />} />
+<Route path="tickets/edit/:id" element={<EditTicketPage />} />
+
+
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </MainLayout>
+            )
+            : <Navigate to="/login" replace />
+
           <ProtectedLayout>
             <Routes>
               <Route index element={<Navigate to="/dashboard" replace />} />
@@ -206,6 +257,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </ProtectedLayout>
+main
         } />
       </Routes>
     </BrowserRouter>

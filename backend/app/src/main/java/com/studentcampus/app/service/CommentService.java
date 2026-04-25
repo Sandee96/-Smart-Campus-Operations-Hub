@@ -22,11 +22,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final TicketRepository ticketRepository;
-    private final NotificationService notificationService; // ✅ added
+    private final NotificationService notificationService;
 
-    // -------------------------------------------------------
-    // ADD COMMENT — notify ticket owner and assigned technician
-    // -------------------------------------------------------
     public Comment addComment(String ticketId, CommentRequest request,
                               String userId, String userName) {
 
@@ -41,61 +38,51 @@ public class CommentService {
 
         Comment saved = commentRepository.save(comment);
 
-        // ✅ Notify ticket OWNER — if commenter is NOT the owner
-        if (!ticket.getReportedBy().equals(userId)) {
+        if (!ticket.getCreatedBy().equals(userId)) {
             try {
                 notificationService.createNotification(
-                    NotificationTriggerHelper.ticket(
-                        ticket.getReportedBy(),
-                        "New Comment on Your Ticket",
-                        userName + " added a comment: \"" +
-                        truncate(request.getBody(), 60) + "\"",
-                        Notification.NotificationType.NEW_COMMENT,
-                        ticketId
-                    )
+                        NotificationTriggerHelper.ticket(
+                                ticket.getCreatedBy(),
+                                "New Comment on Your Ticket",
+                                userName + " added a comment: \"" +
+                                        truncate(request.getBody(), 60) + "\"",
+                                Notification.NotificationType.NEW_COMMENT,
+                                ticketId
+                        )
                 );
             } catch (Exception e) {
-                log.warn("Failed to notify ticket owner of comment: {}",
-                        e.getMessage());
+                log.warn("Failed to notify ticket owner of comment: {}", e.getMessage());
             }
         }
 
-        // ✅ Notify assigned TECHNICIAN — if exists and is NOT the commenter
-        if (ticket.getAssignedTo() != null
-                && !ticket.getAssignedTo().isBlank()
-                && !ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTechnicianId() != null
+                && !ticket.getAssignedTechnicianId().isBlank()
+                && !ticket.getAssignedTechnicianId().equals(userId)) {
             try {
                 notificationService.createNotification(
-                    NotificationTriggerHelper.ticket(
-                        ticket.getAssignedTo(),
-                        "New Comment on Assigned Ticket",
-                        userName + " added a comment: \"" +
-                        truncate(request.getBody(), 60) + "\"",
-                        Notification.NotificationType.NEW_COMMENT,
-                        ticketId
-                    )
+                        NotificationTriggerHelper.ticket(
+                                ticket.getAssignedTechnicianId(),
+                                "New Comment on Assigned Ticket",
+                                userName + " added a comment: \"" +
+                                        truncate(request.getBody(), 60) + "\"",
+                                Notification.NotificationType.NEW_COMMENT,
+                                ticketId
+                        )
                 );
             } catch (Exception e) {
-                log.warn("Failed to notify technician of comment: {}",
-                        e.getMessage());
+                log.warn("Failed to notify technician of comment: {}", e.getMessage());
             }
         }
 
         return saved;
     }
 
-    // -------------------------------------------------------
-    // GET COMMENTS BY TICKET
-    // -------------------------------------------------------
     public List<Comment> getCommentsByTicket(String ticketId) {
         ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new TicketNotFoundException(ticketId));
         return commentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
     }
 
-    // -------------------------------------------------------
-    // EDIT COMMENT — only comment owner
-    // -------------------------------------------------------
     public Comment editComment(String commentId, CommentRequest request,
                                String userId) {
         Comment comment = commentRepository.findById(commentId)
@@ -110,9 +97,6 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    // -------------------------------------------------------
-    // DELETE COMMENT — owner or admin
-    // -------------------------------------------------------
     public void deleteComment(String commentId, String userId,
                               boolean isAdmin) {
         Comment comment = commentRepository.findById(commentId)
@@ -126,9 +110,6 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    // -------------------------------------------------------
-    // HELPER — truncate long comment previews
-    // -------------------------------------------------------
     private String truncate(String text, int maxLength) {
         if (text == null) return "";
         return text.length() <= maxLength
