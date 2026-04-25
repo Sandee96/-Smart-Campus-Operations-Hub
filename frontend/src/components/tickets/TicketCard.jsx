@@ -1,6 +1,5 @@
 import TicketStatusBadge from "./TicketStatusBadge";
 
- feature/chamini/ticket-frontend
 export default function TicketCard({
   ticket,
   isAdmin,
@@ -11,11 +10,6 @@ export default function TicketCard({
 }) {
   return (
     <div className="ticket-card">
-
-export default function TicketCard({ ticket, onClick }) {
-  return (
-    <div onClick={onClick} className="ticket-card">
- main
       <div className="ticket-card-header">
         <div>
           <h3>{ticket.category}</h3>
@@ -30,7 +24,6 @@ export default function TicketCard({ ticket, onClick }) {
         <span className="priority-badge">{ticket.priority}</span>
         <span className="ticket-meta">{ticket.resourceId || "No resource"}</span>
       </div>
-feature/chamini/ticket-frontend
 
       {isAdmin && (
         <p className="ticket-meta">
@@ -57,8 +50,6 @@ feature/chamini/ticket-frontend
           Delete
         </button>
       </div>
-
- main
     </div>
   );
 }
